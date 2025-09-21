@@ -1,0 +1,32 @@
+[project]
+name = "rota-cultural"
+version = "0.1.0"
+description = "Sistema web e mobile que conecta turistas e moradores locais à cultura e eventos de Patos - PB"
+authors = [{name = "Lucas Daniel Lopes Brasileiro", email = "lucasdanielspead@gmail.com"}]
+requires-python = ">=3.11"
+readme = "../README.md"
+dependencies = [
+    "django>=5.2,<6.0",
+    "django-cors-headers>=4.2,<5.0",
+    "django-filter>=23.2,<24.0",
+    "djangorestframework>=3.14,<4.0",
+    "pillow>=10.0,<11.0",
+    "psycopg2>=2.9,<3.0",
+    "python-dotenv>=1.0,<2.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+  "pytest>=7.0",
+  "pytest-django>=4.5",
+  "black>=23.0",
+  "isort>=5.12",
+  "flake8>=6.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["rota_cultural"]
