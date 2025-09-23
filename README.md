@@ -27,7 +27,6 @@ Plataforma digital que conecta turistas e moradores locais à cultura e aos even
 ROTA CULTURAL/
 ├── backend/                 # Django API backend
 ├── frontend/                # React frontend (Vite + TypeScript)
-├── CLAUDE.md               # Guia de desenvolvimento
 ├── README.md               # Este arquivo
 └── .gitignore              # Arquivos ignorados pelo git
 ```
