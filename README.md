@@ -136,7 +136,3 @@ As seguintes variaveis devem ser configuradas no arquivo `.env`:
 - `DATABASE_PASSWORD`: Senha do banco
 - `DATABASE_HOST`: Host do banco
 - `DATABASE_PORT`: Porta do banco
-
-## API
-
-O projeto utiliza Django REST Framework para criar uma API RESTful com endpoints para todos os recursos mencionados acima.
