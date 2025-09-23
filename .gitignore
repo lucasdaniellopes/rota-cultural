@@ -141,7 +141,7 @@ env.bak/
 venv.bak/
 .claude/
 CLAUDE.md
-
+.vscode/
 # UV package manager
 uv.lock
 

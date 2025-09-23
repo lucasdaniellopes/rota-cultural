@@ -3,17 +3,19 @@ name = "rota-cultural"
 version = "0.1.0"
 description = "Sistema web e mobile que conecta turistas e moradores locais à cultura e eventos de Patos - PB"
 authors = [{name = "Lucas Daniel Lopes Brasileiro", email = "lucasdanielspead@gmail.com"}]
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 readme = "../README.md"
 dependencies = [
     "django>=5.2,<6.0",
     "django-cors-headers>=4.2,<5.0",
     "django-filter>=23.2,<24.0",
     "djangorestframework>=3.14,<4.0",
+    "drf-spectacular>=0.28.0",
     "gdal>=3.11.3,<3.11.4",
     "pillow>=10.0,<11.0",
     "psycopg2>=2.9,<3.0",
     "python-dotenv>=1.0,<2.0",
+    "scalar-doc>=0.1.8",
 ]
 
 [build-system]

@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "rota_cultural.apps.notifications",
     "rota_cultural.apps.itineraries",
     "django.contrib.gis",
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -115,6 +116,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Rota Cultural API",
+    "DESCRIPTION": "API para plataforma de turismo cultural de Patos - PB",
+    "VERSION": "1.0.0",
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
