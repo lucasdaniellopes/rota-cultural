@@ -4,6 +4,34 @@
 
 Plataforma digital que conecta turistas e moradores locais à cultura e aos eventos da cidade de Patos - PB, oferecendo uma experiência completa de descoberta e planejamento de roteiros culturais.
 
+## Stack Tecnológica
+
+### Backend
+- **Django 5.2+** - Framework web Python
+- **Django REST Framework** - API REST
+- **PostgreSQL** - Banco de dados
+- **GDAL/PostGIS** - Recursos geoespaciais
+- **drf-spectacular** - Documentação OpenAPI
+- **Scalar** - Interface de documentação interativa
+- **UV** - Gerenciador de pacotes Python
+
+### Frontend
+- **React 18** - Biblioteca UI JavaScript
+- **TypeScript** - Superset de JavaScript
+- **Vite** - Ferramenta de build e servidor de desenvolvimento
+- **pnpm** - Gerenciador de pacotes
+
+## Estrutura do Projeto
+
+```
+ROTA CULTURAL/
+├── backend/                 # Django API backend
+├── frontend/                # React frontend (Vite + TypeScript)
+├── CLAUDE.md               # Guia de desenvolvimento
+├── README.md               # Este arquivo
+└── .gitignore              # Arquivos ignorados pelo git
+```
+
 ## Estrutura do Backend
 
 ```
@@ -33,37 +61,39 @@ backend/
 - **notifications**: Sistema de notificacoes para usuarios
 - **itineraries**: Planejamento de itinerarios personalizados
 
-## Configuracao com UV
+## Configuração do Ambiente
 
-1. Instale o UV (se ainda nao tiver):
+### Backend (Django)
+
+1. Instale o UV (se ainda não tiver):
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-2. Clone o repositorio:
+2. Clone o repositório:
 ```bash
 git clone <repositorio>
 cd "ROTA CULTURAL"
 ```
 
-3. Instale as dependencias:
+3. Instale as dependências do backend:
 ```bash
 cd backend
 uv sync
 ```
 
-4. Configure as variaveis de ambiente:
+4. Configure as variáveis de ambiente:
 ```bash
 cp .env.example .env
 # Edite o arquivo .env com suas credenciais
 ```
 
-5. Execute as migracoes:
+5. Execute as migrações:
 ```bash
 uv run python manage.py migrate
 ```
 
-6. Crie um superusuario:
+6. Crie um superusuário:
 ```bash
 uv run python manage.py createsuperuser
 ```
@@ -72,6 +102,30 @@ uv run python manage.py createsuperuser
 ```bash
 uv run python manage.py runserver
 ```
+
+### Frontend (React)
+
+1. Instale o pnpm (se ainda não tiver):
+```bash
+npm install -g pnpm
+```
+
+2. Instale as dependências do frontend:
+```bash
+cd frontend
+pnpm install
+```
+
+3. Inicie o servidor de desenvolvimento:
+```bash
+pnpm dev
+```
+
+### Acessando a Aplicação
+
+- **Backend API**: http://127.0.0.1:8000
+- **API Documentation**: http://127.0.0.1:8000/api/docs/
+- **Frontend**: http://localhost:5173
 
 ## Variaveis de Ambiente
 
