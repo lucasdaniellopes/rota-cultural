@@ -16,7 +16,7 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView
 from .views import scalar_docs
 
@@ -24,4 +24,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', scalar_docs, name='api-docs'),
+    path('api/v1/', include('rota_cultural.apps.locations.api.v1.routes')),
 ]
