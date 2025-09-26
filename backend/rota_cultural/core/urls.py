@@ -25,4 +25,5 @@ urlpatterns = [
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', scalar_docs, name='api-docs'),
     path('api/v1/', include('rota_cultural.apps.locations.api.v1.routes')),
+    path('api/v1/', include('rota_cultural.apps.routing.api.v1.routes')),
 ]
