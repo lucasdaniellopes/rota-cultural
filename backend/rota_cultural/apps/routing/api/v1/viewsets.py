@@ -10,50 +10,47 @@ class RouteViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['post'])
     def calculate(self, request):
 
-        start_id = request.data.get('start_location_id')
-        end_id = request.data.get('end_location_id')
+        waypoint_ids = request.data.get('waypoint_ids', [])
+        if len(waypoint_ids) < 2:
+            return Response({'error': 'Pelo menos dois waypoint_ids são necessários.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not start_id or not end_id:
-            return Response({'error': 'start_location_id and end_location_id são obrigatórios.'}, status=status.HTTP_400_BAD_REQUEST)
+        locations = []
+        for waypoint_id in waypoint_ids:
+            try:
+                location = Location.objects.get(id=waypoint_id)
+                locations.append(location)
+            except Location.DoesNotExist:
+                return Response({'error': f'Location com id {waypoint_id} não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
+
+        coordinates = []
+        for location in locations:
+            coordinates.append([float(location.longitude), float(location.latitude)])
 
         try:
-            start_location = Location.objects.get(id=start_id)
-            end_location = Location.objects.get(id=end_id)
-
-
             router = OSRM(base_url=settings.OSRM_API_URL)
             route = router.directions(
-                locations=[
-                    [float(start_location.longitude), float(start_location.latitude)],
-                    [float(end_location.longitude), float(end_location.latitude)],
-                ],
+                locations=coordinates,
                 profile='driving'
             )
 
             if not route:
                 return Response({'error': 'Não foi possível calcular a rota.'}, status=status.HTTP_400_BAD_REQUEST)
-            
+
+            waypoints_data = []
+            for location in locations:
+                waypoints_data.append({
+                    'id': location.id,
+                    'name': location.name,
+                    'coordinates': [float(location.latitude), float(location.longitude)],
+                })
 
             return Response({
                 'distance': route.distance, #metros
                 'duration': route.duration, #segundos
                 'geometry': route.geometry,
-                'start_location': {
-                    'id': start_location.id,
-                    'name': start_location.name,
-                    'coordinates': [float(start_location.latitude), float(start_location.longitude)],
-                },
-                'end_location': {
-                    'id': end_location.id,
-                    'name': end_location.name,
-                    'coordinates': [float(end_location.latitude), float(end_location.longitude)],
-                }
+                'waypoints': waypoints_data,
             })
-        
-        except Location.DoesNotExist:
-            return Response({'error': 'Location não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
-        
+
         except Exception as e:
             return Response({'error': f'Erro ao calcular rota: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
 

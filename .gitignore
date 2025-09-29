@@ -159,7 +159,7 @@ uv.lock
 .mypy_cache/
 .dmypy.json
 dmypy.json
-
+.playwright-mcp/
 # Pyre type checker
 .pyre/
 

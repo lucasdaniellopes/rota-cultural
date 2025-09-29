@@ -1,14 +1,15 @@
 import 'leaflet/dist/leaflet.css';
-import MapComponent from '@/components/MapComponent';
-
+import {BrowserRouter, Routes, Route} from 'react-router-dom'
+import MapPage from '@/pages/MapPage';
+ 
 export default function App() {
 
   return (
-    <>
-    <div className="container w-full bg-black text-white p-4 min-h-screen">
-      <MapComponent></MapComponent>
-    </div>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<MapPage />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

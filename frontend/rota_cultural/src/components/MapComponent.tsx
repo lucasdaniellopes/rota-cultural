@@ -3,23 +3,49 @@ import {MapContainer, TileLayer, Marker, Popup, Polyline} from 'react-leaflet'
 import 'leaflet/dist/leaflet.css';
 import {locationService, type Location} from '@/services/api'
 import {routingService, type RouteData} from '@/services/routing'
+import { Select,SelectContent, SelectItem,SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from './ui/button';
+import { Card } from './ui/card';
 
 export default function MapComponent() {
-    const [locations, setLocations] = useState<Location[]>([])
-    const [loading, setLoading] = useState<boolean>(true)
-    const [error, setError] = useState<string | null>(null)
-    const [selectedStart, setSelectedStart] = useState<Location | null>(null)
-    const [selectedEnd, setSelectedEnd] = useState<Location | null>(null)
+    const [waypoints, setWaypoints] = useState<(Location | null)[]>([null, null])
     const [routeData, setRouteData] = useState<RouteData | null>(null)
-    const [loadingRoute, setLoadingRoute] = useState<boolean>(false)
+    const [loadingRoute, setLoadingRoute] = useState(false)
+    const [locations, setLocations] = useState<Location[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const center: [number,number] = [-7.026368, -37.277010] // Centro de Patos
+    
+    
+
+    const handlewaypointChange = (index: number, locationId: string) => {
+        const location = locations.find(loc => loc.id === Number(locationId))
+        if (location) {
+            const newWaypoints = [...waypoints]
+            newWaypoints[index] = location
+            setWaypoints(newWaypoints)
+        }
+    }
+
+    const addWaypoint = () => {
+        setWaypoints([...waypoints, null])
+    }
+
+    const removeWaypoint = (index: number) => {
+        const newWaypoints = waypoints.filter((_, i) => i !== index)
+        setWaypoints(newWaypoints)
+    }
+
 
 
     const calculateRoute = async () => {
-        if (!selectedStart || !selectedEnd) return
-        
+        if (waypoints.length < 2 || waypoints.some(waypoint => !waypoint)) return
+
+        const waypointIds = waypoints.filter(waypoint => waypoint !== null).map(waypoint => waypoint.id)
+
         setLoadingRoute(true)
         try {
-            const route = await routingService.calculateRoute(selectedStart.id, selectedEnd.id)
+            const route = await routingService.calculateRoute({ waypointIds })
             setRouteData(route)
         } catch (error) {
             console.error('Erro ao calcular rota:', error)
@@ -27,6 +53,8 @@ export default function MapComponent() {
             setLoadingRoute(false)
         }
     }
+
+
 
     useEffect(() => {
         const fetchLocations = async () => {
@@ -59,47 +87,49 @@ export default function MapComponent() {
             </div>
         )
     }
-
-
-    const center: [number,number] = [-7.026368, -37.277010] //centro de patos
-
+    console.log(locations)
     return (
-        <div>
-            <div className="p-4 bg-black text-white">
-                <div className="flex gap-4 items-center mb-4">
-                    <select
-                        value={selectedStart?.id || ''}
-                        onChange={(e) => setSelectedStart(locations.find(location => location.id === Number(e.target.value)) || null)}
-                        className="p-2 bg-gray-800 text-white rounded"
-                    >
-                        <option value="" disabled>Selecione o ponto de partida</option>
-                        {locations.map(location => (
-                            <option key={`start-${location.id}`} value={location.id}>{location.name}</option>
-                        ))}
-                    </select>
+        <div className="relative w-full h-screen">
 
-                    <select
-                        value={selectedEnd?.id || ''}
-                        onChange={(e) => setSelectedEnd(locations.find(location => location.id === Number(e.target.value)) || null)}
-                        className="p-2 bg-gray-800 text-white rounded"
-                    >
-                        <option value="" disabled>Selecione o ponto de destino</option>
-                        {locations.map(location => (
-                            <option key={`end-${location.id}`} value={location.id}>{location.name}</option>
-                        ))}
-                    </select>
+            <Card className="absolute -translate-y-1/2 left-4 top-1/2 right-4 z-[1001] bg-white p-5 shadow-lg w-80 h-auto">
 
-                    <button
-                        onClick={calculateRoute}
-                        disabled={!selectedStart || !selectedEnd || loadingRoute}
-                        className="p-2 bg-blue-600 text-white rounded disabled:bg-gray-600 cursor-pointer"
-                        >
-                          {loadingRoute ? 'Calculando...' : 'Calcular Rota'}
-                        </button>
-                </div>
-            </div>
+                {waypoints.map((waypoint, index) => (
+                    <div key={index} className="mb-2">
+                        <Select value={waypoint?.id?.toString() || ''} onValueChange={(value) => {
+                            handlewaypointChange(index, value)}}>
+                            <SelectTrigger className='w-full'>
+                                <SelectValue placeholder={index === 0 ? 'Partida' : index === waypoints.length - 1 ? 'Destino final' : `Parada ${index}`} />
+                            </SelectTrigger>
+                            <SelectContent className='z-[1001]'>
+                                {locations.map((location) => (
+                                    <SelectItem key={`${index}-${location.id}`} value={location.id.toString()}>
+                                        {location.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {waypoints.length > 2 && (
+                            <Button onClick={() => removeWaypoint(index)} size="sm">Remover</Button>
+                        )}
+                    </div>
+                ))}
+                <Button onClick={addWaypoint} size="sm" className="mb-2">Adicionar Parada</Button>
 
-            <MapContainer center={center} zoom={15} className='w-full h-[80vh]'>
+
+           
+
+                {waypoints.length >= 2 && waypoints.every(waypoint => waypoint) &&  (
+                    <Button onClick={calculateRoute}>
+                        {loadingRoute ? 'Calculando...' : 'Calcular Rota'}
+                    </Button>
+                )}
+
+            </Card>
+          
+            
+
+
+            <MapContainer center={center} zoom={15} className='w-full h-full'>
                 <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
