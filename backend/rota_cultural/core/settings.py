@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "rota_cultural.apps.itineraries",
     "rota_cultural.apps.categories",
     "rota_cultural.apps.addresses",
+    "rota_cultural.apps.places",
     "django.contrib.gis",
     "drf_spectacular",
 ]
