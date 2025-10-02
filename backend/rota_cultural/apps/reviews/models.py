@@ -20,10 +20,10 @@ class Review(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Avaliação"
-        verbose_name_plural = "Avaliações"
+        verbose_name = "Review"
+        verbose_name_plural = "Reviews"
         ordering = ['-created_at']
         unique_together = ['user', 'content_type', 'object_id']
 
     def __str__(self):
-        return f"{self.user.username} - {self.rating} estrelas"
+        return f"{self.user.username} - {self.rating} stars"

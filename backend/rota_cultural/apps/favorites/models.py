@@ -16,8 +16,8 @@ class Favorite(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Favorito"
-        verbose_name_plural = "Favoritos"
+        verbose_name = "Favorite"
+        verbose_name_plural = "Favorites"
         ordering = ['-created_at']
         unique_together = ['user', 'content_type', 'object_id']
 

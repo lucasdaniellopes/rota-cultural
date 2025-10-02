@@ -17,8 +17,8 @@ class TouristSpot(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Ponto Turístico"
-        verbose_name_plural = "Pontos Turísticos"
+        verbose_name = "Tourist Spot"
+        verbose_name_plural = "Tourist Spots"
         ordering = ['name']
 
     def __str__(self):
@@ -39,8 +39,8 @@ class Establishment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Estabelecimento"
-        verbose_name_plural = "Estabelecimentos"
+        verbose_name = "Establishment"
+        verbose_name_plural = "Establishments"
         ordering = ['name']
 
     def __str__(self):

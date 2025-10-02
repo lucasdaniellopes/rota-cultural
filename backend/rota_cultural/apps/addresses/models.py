@@ -14,7 +14,8 @@ class Address(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Addresses"
+        verbose_name = "Address"
+        verbose_name_plural = "Addresses"
         ordering = ["neighborhood"]
 
     def __str__(self):

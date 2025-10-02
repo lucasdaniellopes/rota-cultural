@@ -33,8 +33,8 @@ class ItineraryItem(models.Model):
     estimated_departure = models.TimeField(null=True, blank=True)
 
     class Meta:
-        verbose_name = "Item do Roteiro"
-        verbose_name_plural = "Itens dos Roteiros"
+        verbose_name = "itinerary item"
+        verbose_name_plural = "itinerary items"
         ordering = ['itinerary', 'order']
         unique_together = ['itinerary', 'order']
 

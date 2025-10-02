@@ -27,8 +27,8 @@ class Event(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Evento"
-        verbose_name_plural = "Eventos"
+        verbose_name = "Event"
+        verbose_name_plural = "Events"
         ordering = ['start_date', 'name']
 
     def __str__(self):
