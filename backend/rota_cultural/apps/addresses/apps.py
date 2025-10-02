@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class AdressesConfig(AppConfig):
+class AddressesConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "adresses"
+    name = "rota_cultural.apps.addresses"

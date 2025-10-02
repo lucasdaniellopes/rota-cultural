@@ -10,12 +10,12 @@ class AddressAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ("Endereço Principal", {
-            "fields": ("street", "number", "complement")
+            "fields": ("street", "number", "complement",)
         }),
         ("Localização", {
-            "fields": ("neighborhood", "city", "state", "postal_code")
+            "fields": ("neighborhood", "city", "state", "postal_code",)
         }),
         ("Coordenadas", {
-            "fields": ("point"),
+            "fields": ("point",),
         }),
     )
