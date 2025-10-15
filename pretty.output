@@ -1,0 +1,78 @@
+@routing
+Feature: Planejamento de Rotas Básicas # tests/bdd/features/routing/basic_route.feature:2
+  Como visitante da cidade,
+  Eu quero selecionar pontos turísticos para calcular a rota entre eles
+  Para otimizar meu deslocamento e tempo
+  Scenario: Rota básica com dois pontos turísticos                            # tests/bdd/features/routing/basic_route.feature:7
+    Given existem locations "Museu Histórico" e "Teatro Municipal" no sistema # tests/bdd/steps/location_steps.py:17
+      Traceback (most recent call last):
+        File "/home/lucasdaniellopes/Documentos/Programacao/UNIFIP/ROTA CULTURAL/.venv/lib/python3.13/site-packages/behave/model.py", line 1991, in run
+          match.run(runner.context)
+          ~~~~~~~~~^^^^^^^^^^^^^^^^
+        File "/home/lucasdaniellopes/Documentos/Programacao/UNIFIP/ROTA CULTURAL/.venv/lib/python3.13/site-packages/behave/matchers.py", line 105, in run
+          self.func(context, *args, **kwargs)
+          ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "tests/bdd/steps/location_steps.py", line 73, in step_impl
+          name=location_name,
+               ^^^^^^^^^^^^^
+      NameError: name 'location_name' is not defined. Did you mean: 'location_names'?
+
+    And o "Museu Histórico" está na coordenada [-7.0221, -37.2741]            # None
+    And o "Teatro Municipal" está na coordenada [-7.0305, -37.2819]           # None
+    When eu seleciono "Museu Histórico" como partida                          # None
+    And eu seleciono "Teatro Municipal" como destino                          # None
+    And eu clico em "Calcular Rota"                                           # None
+    Then o sistema deve calcular a rota usando OSRM                           # None
+    And a rota deve ter uma distância maior que zero                          # None
+    And a rota deve ter um tempo estimado maior que zero                      # None
+    And a rota deve ser exibida visualmente no mapa                           # None
+
+  Scenario: Tentar calcular rota sem selecionar partida                       # tests/bdd/features/routing/basic_route.feature:19
+    Given existem locations "Museu Histórico" e "Teatro Municipal" no sistema # tests/bdd/steps/location_steps.py:17
+      Traceback (most recent call last):
+        File "/home/lucasdaniellopes/Documentos/Programacao/UNIFIP/ROTA CULTURAL/.venv/lib/python3.13/site-packages/behave/model.py", line 1991, in run
+          match.run(runner.context)
+          ~~~~~~~~~^^^^^^^^^^^^^^^^
+        File "/home/lucasdaniellopes/Documentos/Programacao/UNIFIP/ROTA CULTURAL/.venv/lib/python3.13/site-packages/behave/matchers.py", line 105, in run
+          self.func(context, *args, **kwargs)
+          ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "tests/bdd/steps/location_steps.py", line 73, in step_impl
+          name=location_name,
+               ^^^^^^^^^^^^^
+      NameError: name 'location_name' is not defined. Did you mean: 'location_names'?
+
+    When eu não seleciono nenhum ponto de partida                             # None
+    And eu seleciono "Teatro Municipal" como destino                          # None
+    And eu clico em "Calcular Rota"                                           # None
+    Then o sistema deve exibir erro "Selecione um ponto de partida"           # None
+    And nenhuma rota deve ser calculada                                       # None
+
+  Scenario: Tentar calcular rota sem selecionar destino                       # tests/bdd/features/routing/basic_route.feature:27
+    Given existem locations "Museu Histórico" e "Teatro Municipal" no sistema # tests/bdd/steps/location_steps.py:17
+      Traceback (most recent call last):
+        File "/home/lucasdaniellopes/Documentos/Programacao/UNIFIP/ROTA CULTURAL/.venv/lib/python3.13/site-packages/behave/model.py", line 1991, in run
+          match.run(runner.context)
+          ~~~~~~~~~^^^^^^^^^^^^^^^^
+        File "/home/lucasdaniellopes/Documentos/Programacao/UNIFIP/ROTA CULTURAL/.venv/lib/python3.13/site-packages/behave/matchers.py", line 105, in run
+          self.func(context, *args, **kwargs)
+          ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "tests/bdd/steps/location_steps.py", line 73, in step_impl
+          name=location_name,
+               ^^^^^^^^^^^^^
+      NameError: name 'location_name' is not defined. Did you mean: 'location_names'?
+
+    When eu seleciono "Museu Histórico" como partida                          # None
+    And eu não seleciono nenhum ponto de destino                              # None
+    And eu clico em "Calcular Rota"                                           # None
+    Then o sistema deve exibir erro "Selecione um ponto de destino"           # None
+    And nenhuma rota deve ser calculada                                       # None
+
+  Scenario: Calcular rota com os mesmos pontos                     # tests/bdd/features/routing/basic_route.feature:35
+    Given existe location "Museu Histórico" no sistema             # None
+    And o "Museu Histórico" está na coordenada [-7.0221, -37.2741] # None
+    When eu seleciono "Museu Histórico" como partida               # None
+    And eu seleciono "Museu Histórico" como destino                # None
+    And eu clico em "Calcular Rota"                                # None
+    Then o sistema deve exibir erro "Selecione pontos diferentes"  # None
+    And nenhuma rota deve ser calculada                            # None
+
