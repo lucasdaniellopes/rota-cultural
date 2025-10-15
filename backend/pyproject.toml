@@ -1,7 +1,7 @@
 [project]
-name = "rota-cultural"
+name = "rota-cultural-backend"
 version = "0.1.0"
-description = "Sistema web e mobile que conecta turistas e moradores locais à cultura e eventos de Patos - PB"
+description = "Backend Django API para Rota Cultural - Patos-PB"
 authors = [{name = "Lucas Daniel Lopes Brasileiro", email = "lucasdanielspead@gmail.com"}]
 requires-python = ">=3.12"
 readme = "../README.md"
