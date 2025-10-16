@@ -1,9 +1,11 @@
+import LoginPage from './pages/LoginPage';
+
 function App() {
   return (
     <>
-    <h1>Rota Cultural</h1>
+      <LoginPage />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
