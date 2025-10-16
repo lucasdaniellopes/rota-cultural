@@ -1,15 +1,9 @@
-import 'leaflet/dist/leaflet.css';
-import {BrowserRouter, Routes, Route} from 'react-router-dom'
-import MapPage from '@/pages/MapPage';
- 
-export default function App() {
-
+function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<MapPage />} />
-      </Routes>
-    </BrowserRouter>
+    <>
+    <h1>Rota Cultural</h1>
+    </>
   )
 }
 
+export default App
