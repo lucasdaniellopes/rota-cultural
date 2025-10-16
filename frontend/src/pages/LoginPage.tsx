@@ -1,8 +1,11 @@
 import { Mail, Lock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Form from '../components/Form';
 import styles from '../styles/LoginPage.module.css';
 
 function LoginPage() {
+  const navigate = useNavigate();
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log('Form submitted');
@@ -32,7 +35,7 @@ function LoginPage() {
 
           <Form.Button className={styles['submit-button']}>Entrar</Form.Button>
 
-          <Form.SignUp prefix="Não tem uma conta?" linkText="Crie uma" href="/signup" />
+          <Form.SignUp prefix="Não tem uma conta?" linkText="Crie uma" href="#" onClick={(e) => { e.preventDefault(); navigate('/signup'); }} />
         </Form>
       </div>
     </div>
