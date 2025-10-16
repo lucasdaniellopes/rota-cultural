@@ -1,8 +1,9 @@
 import MapComponent from "@/components/MapComponent"
+import styles from '@/styles/MapPage.module.css';
 
 export default function MapPage() {
     return (
-        <div className="flex flex-col h-screen bg-gray-50">
+        <div className={styles['map-page-container']}>
          <MapComponent></MapComponent>
         </div>
     )

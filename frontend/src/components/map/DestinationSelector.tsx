@@ -1,7 +1,17 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, X } from "lucide-react";
 import type { Location } from "@/services/api";
+import {
+  Button,
+  Card,
+  CardContent,
+  DestinationContainer,
+  DestinationItem,
+  DestinationInfo,
+  StatusDot,
+  DestinationText,
+  DestinationLabel,
+  DestinationName
+} from "./UIComponents";
 
 interface DestinationSelectorProps {
     selectedStart: Location | null;
@@ -19,56 +29,55 @@ export default function DestinationSelector({
     onCalculateRoute
 }: DestinationSelectorProps) {
     return (
-    <div className="absolute top-4 left-4 z-[1000] space-y-2">
+    <DestinationContainer>
       {/* Card de Partida */}
-      <Card className="w-80 shadow-lg">
-        <CardContent className="p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <div>
-                <p className="text-xs text-gray-500">Partida</p>
-                <p className="font-medium">
+      <Card>
+        <CardContent>
+          <DestinationItem>
+            <DestinationInfo>
+              <StatusDot color="green" />
+              <DestinationText>
+                <DestinationLabel>Partida</DestinationLabel>
+                <DestinationName>
                   {selectedStart ? selectedStart.name : "Nenhum ponto selecionado"}
-                </p>
-              </div>
-            </div>
-            
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onClearStart}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            
-          </div>
+                </DestinationName>
+              </DestinationText>
+            </DestinationInfo>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClearStart}
+            >
+              <X size={16} />
+            </Button>
+          </DestinationItem>
         </CardContent>
       </Card>
 
       {/* Card de Destino */}
-      <Card className="w-80 shadow-lg">
-        <CardContent className="p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-              <div>
-                <p className="text-xs text-gray-500">Destino</p>
-                <p className="font-medium">
+      <Card>
+        <CardContent>
+          <DestinationItem>
+            <DestinationInfo>
+              <StatusDot color="red" />
+              <DestinationText>
+                <DestinationLabel>Destino</DestinationLabel>
+                <DestinationName>
                   {selectedEnd ? selectedEnd.name : "Nenhum ponto selecionado"}
-                </p>
-              </div>
-            </div>
+                </DestinationName>
+              </DestinationText>
+            </DestinationInfo>
             {selectedEnd && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onClearEnd}
               >
-                <X className="h-4 w-4" />
+                <X size={16} />
               </Button>
             )}
-          </div>
+          </DestinationItem>
         </CardContent>
       </Card>
 
@@ -76,14 +85,13 @@ export default function DestinationSelector({
       {selectedStart && selectedEnd && (
         <Button
           onClick={onCalculateRoute}
-          className="w-80 shadow-lg"
           size="lg"
         >
-          <MapPin className="mr-2 h-4 w-4" />
+          <MapPin size={16} style={{ marginRight: '0.5rem' }} />
           Calcular Rota
         </Button>
       )}
-    </div>
+    </DestinationContainer>
   );
 
 }
