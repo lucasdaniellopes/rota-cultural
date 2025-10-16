@@ -1,11 +1,23 @@
 import {useState, useEffect} from 'react'
 import {MapContainer, TileLayer, Marker, Popup, Polyline} from 'react-leaflet'
+import { Icon } from 'leaflet'
 import 'leaflet/dist/leaflet.css';
 import {locationService, type Location} from '@/services/api'
 import {routingService, type RouteData} from '@/services/routing'
 import { Select,SelectContent, SelectItem,SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from './ui/button';
 import { Card } from './ui/card';
+
+// Configure o ícone padrão do Leaflet
+delete (Icon.Default.prototype as any)._getIconUrl
+Icon.Default.mergeOptions({
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+})
 
 export default function MapComponent() {
     const [waypoints, setWaypoints] = useState<(Location | null)[]>([null, null])
@@ -87,8 +99,7 @@ export default function MapComponent() {
             </div>
         )
     }
-    console.log(locations)
-    return (
+  return (
         <div className="relative w-full h-screen">
 
             <Card className="absolute -translate-y-1/2 left-4 top-1/2 right-4 z-[1001] bg-white p-5 shadow-lg w-80 h-auto">
@@ -137,12 +148,16 @@ export default function MapComponent() {
 
                 {locations.map((location) => (
                     <Marker
-                    key={location.id}
-                    position={[Number(location.latitude), Number(location.longitude)]}
+                        key={location.id}
+                        position={[Number(location.latitude), Number(location.longitude)]}
                     >
-                        <Popup>{location.name}</Popup>
+                        <Popup>
+                            <div>
+                                <h3 className="font-semibold">{location.name}</h3>
+                                <p className="text-sm text-gray-600">{location.description}</p>
+                            </div>
+                        </Popup>
                     </Marker>
-
                 ))}
 
                 {routeData && (
