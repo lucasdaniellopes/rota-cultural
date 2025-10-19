@@ -31,9 +31,6 @@ function Navbar({ isAuthenticated = true, onLogout }: NavbarProps) {
   return (
     <nav className={styles.navbar}>
       <div className={styles['navbar-container']}>
-        <div className={styles['logo-section']}>
-          <img src="/RotaCultural.png" alt="Rota Cultural" className={styles.logo} />
-        </div>
 
         <div className={styles['nav-items']}>
           {navItems.map((item) => {
