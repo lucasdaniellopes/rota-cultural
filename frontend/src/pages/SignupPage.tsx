@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Form from '../components/Form';
 import styles from '../styles/SignupPage.module.css';
 
+
 function SignupPage() {
   const navigate = useNavigate();
   const [accountType, setAccountType] = useState<'visitor' | 'organizer' | null>(null);
