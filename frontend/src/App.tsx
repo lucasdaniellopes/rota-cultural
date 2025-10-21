@@ -7,6 +7,7 @@ import SignupPage from '@/pages/SignupPage';
 import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
 import TouristPlacesPage from '@/pages/TouristPlacesPage';
 import EventsPage from '@/pages/EventsPage';
+import ItinerariesPage from '@/pages/ItinerariesPage';
  
 export default function App() {
 
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/pontos-turisticos" element={<TouristPlacesPage />} />
         <Route path="/eventos" element={<EventsPage />} />
+        <Route path="/roteiros" element={<ItinerariesPage />} />
       </Routes>
     </BrowserRouter>
   )
