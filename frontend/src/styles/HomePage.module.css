@@ -116,6 +116,13 @@
   gap: 0.5rem;
 }
 
+.title-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #0052cc;
+}
+
 .section-title {
   font-size: 1.75rem;
   font-weight: 700;
