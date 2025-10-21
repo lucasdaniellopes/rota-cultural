@@ -6,6 +6,7 @@ import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
 import TouristPlacesPage from '@/pages/TouristPlacesPage';
+import EventsPage from '@/pages/EventsPage';
  
 export default function App() {
 
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/pontos-turisticos" element={<TouristPlacesPage />} />
+        <Route path="/eventos" element={<EventsPage />} />
       </Routes>
     </BrowserRouter>
   )
