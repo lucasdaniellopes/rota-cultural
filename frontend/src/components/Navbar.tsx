@@ -1,4 +1,4 @@
-import { Home, Calendar, Map, MapPin, Route, LogOut } from 'lucide-react';
+import { Home, Calendar, Map, MapPin, Route, LogOut, Heart } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styles from '../styles/Navbar.module.css';
 
@@ -50,10 +50,20 @@ function Navbar({ isAuthenticated = true, onLogout }: NavbarProps) {
         </div>
 
         {isAuthenticated && (
-          <button onClick={handleLogout} className={styles['logout-btn']}>
-            <LogOut size={20} className={styles['logout-icon']} />
-            <span className={styles['logout-label']}>Entrar</span>
-          </button>
+          <div className={styles['action-buttons']}>
+            <button 
+              onClick={() => navigate('/favoritos')} 
+              className={`${styles['favorites-btn']} ${isActive('/favoritos') ? styles.active : ''}`}
+              title="Meus Favoritos"
+            >
+              <Heart size={20} className={styles['favorites-icon']} />
+              <span className={styles['favorites-label']}>Meus Favoritos</span>
+            </button>
+            <button onClick={handleLogout} className={styles['logout-btn']}>
+              <LogOut size={20} className={styles['logout-icon']} />
+              <span className={styles['logout-label']}>Entrar</span>
+            </button>
+          </div>
         )}
       </div>
     </nav>

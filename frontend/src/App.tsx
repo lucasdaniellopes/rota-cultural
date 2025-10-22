@@ -8,6 +8,7 @@ import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
 import TouristPlacesPage from '@/pages/TouristPlacesPage';
 import EventsPage from '@/pages/EventsPage';
 import ItinerariesPage from '@/pages/ItinerariesPage';
+import FavoritesPage from '@/pages/FavoritesPage';
  
 export default function App() {
 
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/pontos-turisticos" element={<TouristPlacesPage />} />
         <Route path="/eventos" element={<EventsPage />} />
         <Route path="/roteiros" element={<ItinerariesPage />} />
+        <Route path="/favoritos" element={<FavoritesPage />} />
       </Routes>
     </BrowserRouter>
   )
