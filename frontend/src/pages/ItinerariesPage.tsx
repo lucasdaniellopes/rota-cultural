@@ -36,6 +36,18 @@ function ItinerariesPage() {
         </div>
       </section>
 
+      <section className={styles['action-section']}>
+        <div className={styles['action-container']}>
+          <button 
+            className={styles['create-btn']}
+            onClick={handleCreateItinerary}
+          >
+            <Plus size={18} />
+            Criar Novo Roteiro
+          </button>
+        </div>
+      </section>
+
       {itineraries.length === 0 ? (
         <section className={styles['empty-state-section']}>
           <div className={styles['empty-state-container']}>
