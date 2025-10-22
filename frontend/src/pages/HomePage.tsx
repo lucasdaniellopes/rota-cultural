@@ -209,7 +209,7 @@ function HomePage() {
             </button>
             <button 
               className={styles['cta-btn-secondary']}
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/avaliacoes')}
             >
               <Eye size={18} />
               Avaliar o Site

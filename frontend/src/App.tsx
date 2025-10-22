@@ -9,6 +9,7 @@ import TouristPlacesPage from '@/pages/TouristPlacesPage';
 import EventsPage from '@/pages/EventsPage';
 import ItinerariesPage from '@/pages/ItinerariesPage';
 import FavoritesPage from '@/pages/FavoritesPage';
+import ReviewsPage from '@/pages/ReviewsPage';
  
 export default function App() {
 
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/eventos" element={<EventsPage />} />
         <Route path="/roteiros" element={<ItinerariesPage />} />
         <Route path="/favoritos" element={<FavoritesPage />} />
+        <Route path="/avaliacoes" element={<ReviewsPage />} />
       </Routes>
     </BrowserRouter>
   )
