@@ -7,8 +7,6 @@ import SignupPage from '@/pages/SignupPage';
 import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
 import TouristPlacesPage from '@/pages/TouristPlacesPage';
 import EventsPage from '@/pages/EventsPage';
-import ItinerariesPage from '@/pages/ItinerariesPage';
-import CreateItineraryPage from '@/pages/CreateItineraryPage';
 import FavoritesPage from '@/pages/FavoritesPage';
 import ReviewsPage from '@/pages/ReviewsPage';
  
@@ -24,12 +22,9 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/pontos-turisticos" element={<TouristPlacesPage />} />
         <Route path="/eventos" element={<EventsPage />} />
-        <Route path="/roteiros" element={<ItinerariesPage />} />
-        <Route path="/roteiros/criar" element={<CreateItineraryPage />} />
         <Route path="/favoritos" element={<FavoritesPage />} />
         <Route path="/avaliacoes" element={<ReviewsPage />} />
       </Routes>
     </BrowserRouter>
   )
 }
-

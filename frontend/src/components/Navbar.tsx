@@ -1,4 +1,4 @@
-import { Home, Calendar, Map, MapPin, Route, LogOut, Heart } from 'lucide-react';
+import { Home, Calendar, Map, MapPin, LogOut, Heart } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styles from '../styles/Navbar.module.css';
 
@@ -16,7 +16,6 @@ function Navbar({ isAuthenticated = true, onLogout }: NavbarProps) {
     { id: 'eventos', label: 'Eventos', icon: Calendar, href: '/eventos' },
     { id: 'mapa', label: 'Mapa', icon: Map, href: '/map' },
     { id: 'pontos', label: 'Pontos Turísticos', icon: MapPin, href: '/pontos-turisticos' },
-    { id: 'roteiros', label: 'Roteiros', icon: Route, href: '/roteiros' },
   ];
 
   const isActive = (href: string) => location.pathname === href;

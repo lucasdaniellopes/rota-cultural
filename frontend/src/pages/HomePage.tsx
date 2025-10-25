@@ -80,7 +80,7 @@ function HomePage() {
       <section className={styles['hero-section']}>
         <div className={styles['hero-container']}>
           <h1 className={styles['hero-title']}>Descubro os Melhores Destinos e Eventos</h1>
-          <p className={styles['hero-subtitle']}>Explore pontos turísticos, eventos culturais e crie roteiros personalizados para sua visita</p>
+          <p className={styles['hero-subtitle']}>Explore pontos turísticos, eventos culturais e descubra os melhores lugares para visitar</p>
           
           <div className={styles['hero-actions']}>
             <button 
@@ -197,19 +197,19 @@ function HomePage() {
       <section className={styles['cta-section']}>
         <div className={styles['cta-container']}>
           <h2 className={styles['cta-title']}>Planeje Sua Visita Perfeita</h2>
-          <p className={styles['cta-subtitle']}>Crie roteiros personalizados, descubra eventos próximos e encontre melhores lugares para visitar</p>
+          <p className={styles['cta-subtitle']}>Descubra eventos próximos, encontre os melhores lugares para visitar e planeje sua viagem perfeita</p>
           
           <div className={styles['cta-actions']}>
             <button 
               className={styles['cta-btn-primary']}
-              onClick={() => navigate('/roteiros')}
+              onClick={() => navigate('/eventos')}
             >
-              <MapPin size={18} />
-              Criar meu Roteiro
+              <Calendar size={18} />
+              Descubra Eventos
             </button>
             <button 
               className={styles['cta-btn-secondary']}
-              onClick={() => navigate('/avaliacoes')}
+              onClick={() => navigate('/')}
             >
               <Eye size={18} />
               Avaliar o Site

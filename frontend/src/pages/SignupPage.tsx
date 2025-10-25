@@ -51,7 +51,7 @@ function SignupPage() {
                 type="button"
                 className={`${styles['account-type-btn']} ${accountType === 'visitor' ? styles.active : ''}`}
                 onClick={() => setAccountType('visitor')}
-                title="Explorar pontos turísticos, eventos e criar roteiros"
+                title="Explorar pontos turísticos e eventos culturais"
               >
                 <Users size={24} className={styles['account-icon']} />
                 <span className={styles['account-label']}>Visitante</span>
