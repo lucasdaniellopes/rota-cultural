@@ -1,3 +1,83 @@
+@discovery
+Feature: Descoberta de Pontos Turísticos # tests/bdd/features/discovery/browse_locations.feature:2
+  Como usuário explorando a cidade,
+  Eu quero visualizar todos os pontos turísticos disponíveis
+  Para encontrar lugares interessantes para visitar
+  Scenario: Listar todos os pontos turísticos disponíveis              # tests/bdd/features/discovery/browse_locations.feature:7
+    Given existem múltiplos locations cadastrados no sistema           # None
+    When eu acesso a página principal do mapa                          # None
+    Then todos os locations devem ser exibidos como marcadores no mapa # None
+    And cada marcador deve estar na posição geográfica correta         # None
+    And ao clicar em um marcador, deve exibir o nome do local          # None
+
+  Scenario: Buscar local por nome                                                      # tests/bdd/features/discovery/browse_locations.feature:14
+    Given existem locations "Museu Histórico", "Teatro Municipal" e "Parque da Cidade" # None
+    When eu busco por "Museu"                                                          # None
+    Then apenas locations com "Museu" no nome devem ser destacados                     # None
+    And outros locations devem permanecer visíveis mas não destacados                  # None
+
+  Scenario: Sistema está vazio                                         # tests/bdd/features/discovery/browse_locations.feature:20
+    Given não existem locations cadastrados                            # None
+    When eu acesso a página principal                                  # None
+    Then deve ser exibida mensagem "Nenhum ponto turístico cadastrado" # None
+    And o mapa deve estar vazio de marcadores                          # None
+
+  Scenario: Localização com coordenadas inválidas                    # tests/bdd/features/discovery/browse_locations.feature:26
+    Given existe location "Local Inválido" com coordenadas nulas     # None
+    When eu acesso a página principal                                # None
+    Then o "Local Inválido" não deve ser exibido no mapa             # None
+    And deve ser exibido aviso sobre local com coordenadas inválidas # None
+
+  Scenario: Carregar múltiplos locations                              # tests/bdd/features/discovery/browse_locations.feature:32
+    Given existem 10 locations cadastrados no sistema                 # None
+    When eu acesso a página principal                                 # None
+    Then todos os 10 locations devem ser carregados                   # None
+    And o tempo de carregamento deve ser inferior a 3 segundos        # None
+    And a interface deve permanecer responsiva durante o carregamento # None
+
+@discovery
+Feature: Busca de Pontos Turísticos # tests/bdd/features/discovery/search_locations.feature:2
+  Como usuário procurando lugares específicos,
+  Eu quero buscar pontos turísticos por nome ou característica
+  Para encontrar rapidamente o que procuro
+  Scenario: Busca por nome exato                                                            # tests/bdd/features/discovery/search_locations.feature:7
+    Given existem locations "Museu Histórico", "Museu de Arte Moderna" e "Teatro Municipal" # None
+    When eu digito "Museu Histórico" na busca                                               # None
+    Then apenas o "Museu Histórico" deve ser retornado nos resultados                       # None
+    And o resultado deve ser destacado no mapa                                              # None
+
+  Scenario: Busca por termo parcial                                                  # tests/bdd/features/discovery/search_locations.feature:13
+    Given existem locations "Centro Cultural", "Casa de Cultura" e "Shopping Center" # None
+    When eu digito "Cultura" na busca                                                # None
+    Then "Centro Cultural" e "Casa de Cultura" devem ser retornados                  # None
+    And "Shopping Center" não deve ser retornado                                     # None
+
+  Scenario: Busca sem resultados                              # tests/bdd/features/discovery/search_locations.feature:19
+    Given existem locations "Museu", "Teatro" e "Parque"      # None
+    When eu digito "Biblioteca" na busca                      # None
+    Then nenhum resultado deve ser retornado                  # None
+    And deve ser exibida mensagem "Nenhum local encontrado"   # None
+    And todos os marcadores devem permanecer visíveis no mapa # None
+
+  Scenario: Busca vazia                           # tests/bdd/features/discovery/search_locations.feature:26
+    Given existem múltiplos locations cadastrados # None
+    When eu deixo o campo de busca vazio          # None
+    Then todos os locations devem ser exibidos    # None
+    And nenhum filtro deve ser aplicado           # None
+
+  Scenario: Busca com caracteres especiais           # tests/bdd/features/discovery/search_locations.feature:32
+    Given existe location "Centro de Convenções"     # None
+    When eu digito "Centro de" na busca              # None
+    Then o "Centro de Convenções" deve ser retornado # None
+    And a busca deve ignorar maiúsculas e minúsculas # None
+
+  Scenario: Busca durante carregamento                            # tests/bdd/features/discovery/search_locations.feature:38
+    Given a busca está sendo processada                           # None
+    When eu digito um termo de busca                              # None
+    Then deve ser exibido indicador de carregamento               # None
+    And a interface deve permanecer responsiva                    # None
+    And os resultados devem aparecer quando a busca for concluída # None
+
 @routing
 Feature: Planejamento de Rotas Básicas # tests/bdd/features/routing/basic_route.feature:2
   Como visitante da cidade,
@@ -75,4 +155,141 @@ Feature: Planejamento de Rotas Básicas # tests/bdd/features/routing/basic_route
     And eu clico em "Calcular Rota"                                # None
     Then o sistema deve exibir erro "Selecione pontos diferentes"  # None
     And nenhuma rota deve ser calculada                            # None
+
+@routing
+Feature: Roteiro com Múltiplas Paradas # tests/bdd/features/routing/multi_waypoint_route.feature:2
+  Como turista planejando meu dia,
+  Eu quero adicionar várias paradas ao meu roteiro
+  Para otimizar meu tempo na cidade e visitar múltiplos locais
+  Scenario: Rota com três pontos turísticos                                                    # tests/bdd/features/routing/multi_waypoint_route.feature:7
+    Given existem locations "Museu Histórico", "Igreja Matriz" e "Teatro Municipal" no sistema # tests/bdd/steps/location_steps.py:17
+      Traceback (most recent call last):
+        File "/home/lucasdaniellopes/Documentos/Programacao/UNIFIP/ROTA CULTURAL/.venv/lib/python3.13/site-packages/behave/model.py", line 1991, in run
+          match.run(runner.context)
+          ~~~~~~~~~^^^^^^^^^^^^^^^^
+        File "/home/lucasdaniellopes/Documentos/Programacao/UNIFIP/ROTA CULTURAL/.venv/lib/python3.13/site-packages/behave/matchers.py", line 105, in run
+          self.func(context, *args, **kwargs)
+          ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "tests/bdd/steps/location_steps.py", line 73, in step_impl
+          name=location_name,
+               ^^^^^^^^^^^^^
+      NameError: name 'location_name' is not defined. Did you mean: 'location_names'?
+
+    And o "Museu Histórico" está na coordenada [-7.0221, -37.2741]                             # None
+    And a "Igreja Matriz" está na coordenada [-7.0250, -37.2778]                               # None
+    And o "Teatro Municipal" está na coordenada [-7.0305, -37.2819]                            # None
+    When eu adiciono "Museu Histórico" como primeira parada                                    # None
+    And eu adiciono "Igreja Matriz" como segunda parada                                        # None
+    And eu adiciono "Teatro Municipal" como terceira parada                                    # None
+    And eu clico em "Calcular Rota"                                                            # None
+    Then o sistema deve calcular uma rota completa passando pelos três pontos                  # None
+    And a rota deve ter distância acumulada maior que a rota entre apenas dois pontos          # None
+    And a rota deve ter tempo estimado acumulado maior que a rota entre apenas dois pontos     # None
+    And a rota deve ser exibida visualmente com múltiplos segmentos                            # None
+
+  Scenario: Adicionar e remover paradas do roteiro                                                # tests/bdd/features/routing/multi_waypoint_route.feature:21
+    Given existem locations "Museu Histórico", "Teatro Municipal" e "Parque da Cidade" no sistema # tests/bdd/steps/location_steps.py:17
+      Traceback (most recent call last):
+        File "/home/lucasdaniellopes/Documentos/Programacao/UNIFIP/ROTA CULTURAL/.venv/lib/python3.13/site-packages/behave/model.py", line 1991, in run
+          match.run(runner.context)
+          ~~~~~~~~~^^^^^^^^^^^^^^^^
+        File "/home/lucasdaniellopes/Documentos/Programacao/UNIFIP/ROTA CULTURAL/.venv/lib/python3.13/site-packages/behave/matchers.py", line 105, in run
+          self.func(context, *args, **kwargs)
+          ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "tests/bdd/steps/location_steps.py", line 73, in step_impl
+          name=location_name,
+               ^^^^^^^^^^^^^
+      NameError: name 'location_name' is not defined. Did you mean: 'location_names'?
+
+    And eu adicionei "Museu Histórico" ao meu roteiro                                             # None
+    And eu adicionei "Teatro Municipal" ao meu roteiro                                            # None
+    When eu adiciono "Parque da Cidade" como terceira parada                                      # None
+    Then o roteiro deve conter três paradas                                                       # None
+    When eu removo "Teatro Municipal" do roteiro                                                  # None
+    Then o roteiro deve conter apenas duas paradas                                                # None
+    And "Museu Histórico" deve continuar na primeira posição                                      # None
+    And "Parque da Cidade" deve estar na segunda posição                                          # None
+
+  Scenario: Reordenar paradas do roteiro                            # tests/bdd/features/routing/multi_waypoint_route.feature:32
+    Given existem locations "Museu", "Igreja" e "Teatro" no sistema # tests/bdd/steps/location_steps.py:17
+      Traceback (most recent call last):
+        File "/home/lucasdaniellopes/Documentos/Programacao/UNIFIP/ROTA CULTURAL/.venv/lib/python3.13/site-packages/behave/model.py", line 1991, in run
+          match.run(runner.context)
+          ~~~~~~~~~^^^^^^^^^^^^^^^^
+        File "/home/lucasdaniellopes/Documentos/Programacao/UNIFIP/ROTA CULTURAL/.venv/lib/python3.13/site-packages/behave/matchers.py", line 105, in run
+          self.func(context, *args, **kwargs)
+          ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "tests/bdd/steps/location_steps.py", line 73, in step_impl
+          name=location_name,
+               ^^^^^^^^^^^^^
+      NameError: name 'location_name' is not defined. Did you mean: 'location_names'?
+
+    And eu adicionei "Museu" como primeira parada                   # None
+    And eu adicionei "Igreja" como segunda parada                   # None
+    And eu adicionei "Teatro" como terceira parada                  # None
+    When eu movo "Teatro" para a segunda posição                    # None
+    Then a ordem do roteiro deve ser: "Museu", "Teatro", "Igreja"   # None
+    And o sistema deve recalcular a rota com a nova ordem           # None
+
+  Scenario: Limpar todas as paradas do roteiro      # tests/bdd/features/routing/multi_waypoint_route.feature:41
+    Given eu tenho múltiplas paradas no meu roteiro # None
+    When eu clico em "Limpar Roteiro"               # None
+    Then todas as paradas devem ser removidas       # None
+    And o roteiro deve estar vazio                  # None
+    And nenhuma rota deve ser exibida no mapa       # None
+
+@routing
+Feature: Visualização de Rotas no Mapa # tests/bdd/features/routing/route_visualization.feature:2
+  Como usuário planejando minha visita,
+  Eu quero ver a rota visualmente no mapa
+  Para entender o trajeto e me orientar durante o percurso
+  Scenario: Exibir rota calculada no mapa                                        # tests/bdd/features/routing/route_visualization.feature:7
+    Given existem locations "Praça Centenário" e "Estação Rodoviária" no sistema # tests/bdd/steps/location_steps.py:17
+      Traceback (most recent call last):
+        File "/home/lucasdaniellopes/Documentos/Programacao/UNIFIP/ROTA CULTURAL/.venv/lib/python3.13/site-packages/behave/model.py", line 1991, in run
+          match.run(runner.context)
+          ~~~~~~~~~^^^^^^^^^^^^^^^^
+        File "/home/lucasdaniellopes/Documentos/Programacao/UNIFIP/ROTA CULTURAL/.venv/lib/python3.13/site-packages/behave/matchers.py", line 105, in run
+          self.func(context, *args, **kwargs)
+          ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "tests/bdd/steps/location_steps.py", line 73, in step_impl
+          name=location_name,
+               ^^^^^^^^^^^^^
+      NameError: name 'location_name' is not defined. Did you mean: 'location_names'?
+
+    And eu calculei a rota entre esses dois pontos                               # None
+    When a rota é calculada com sucesso                                          # None
+    Then uma linha poligonal deve ser desenhada no mapa conectando os pontos     # None
+    And a linha deve ter cor azul                                                # None
+    And a linha deve ter espessura visível                                       # None
+    And o mapa deve centralizar na rota calculada                                # None
+
+  Scenario: Exibir informações da rota                       # tests/bdd/features/routing/route_visualization.feature:16
+    Given eu calculei uma rota entre dois pontos             # None
+    When a rota é calculada com sucesso                      # None
+    Then a distância total deve ser exibida em metros        # None
+    And o tempo estimado deve ser exibido em minutos         # None
+    And as informações devem ser formatadas de forma legível # None
+    And as informações devem estar visíveis na interface     # None
+
+  Scenario: Remover rota do mapa                              # tests/bdd/features/routing/route_visualization.feature:24
+    Given uma rota está sendo exibida no mapa                 # None
+    When eu clico em "Limpar Rota"                            # None
+    Then a linha poligonal deve ser removida do mapa          # None
+    And as informações de distância e tempo devem desaparecer # None
+    And o mapa deve voltar ao estado inicial                  # None
+
+  Scenario: Rota com múltiplos segmentos                                 # tests/bdd/features/routing/route_visualization.feature:31
+    Given eu calculei uma rota com três pontos: "A", "B" e "C"           # None
+    When a rota é calculada com sucesso                                  # None
+    Then segmentos devem ser desenhados conectando "A" → "B" e "B" → "C" # None
+    And todos os segmentos devem ter a mesma cor e espessura             # None
+    And os marcadores devem permanecer visíveis para cada ponto          # None
+
+  Scenario: Erro na visualização da rota                   # tests/bdd/features/routing/route_visualization.feature:38
+    Given eu tentei calcular uma rota inválida             # None
+    When o sistema retorna erro da API OSRM                # None
+    Then nenhuma linha deve ser desenhada no mapa          # None
+    And mensagem de erro deve ser exibida para o usuário   # None
+    And os marcadores dos pontos devem permanecer visíveis # None
 

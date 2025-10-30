@@ -1,15 +1,15 @@
 import {useState, useEffect} from 'react'
 import {MapContainer, TileLayer, Marker, Popup, Polyline} from 'react-leaflet'
 import { Icon } from 'leaflet'
-import 'leaflet/dist/leaflet.css';
+import 'leaflet/dist/leaflet.css'
 import {locationService, type Location} from '@/services/api'
 import {routingService, type RouteData} from '@/services/routing'
-import { Button, Card, Select } from './map/UIComponents'
+import DestinationSelector from './map/DestinationSelector'
 import styles from '@/styles/MapComponent.module.css';
 
-// Configure o ícone padrão do Leaflet
 delete (Icon.Default.prototype as any)._getIconUrl
 Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
   iconSize: [25, 41],
@@ -95,36 +95,15 @@ export default function MapComponent() {
 
     return (
         <div className={styles['map-component-container']}>
-
-            <Card className={styles['waypoints-card']}>
-
-                {waypoints.map((waypoint, index) => (
-                    <div key={index} className={styles['waypoint-item']}>
-                        <Select value={waypoint?.id?.toString() || ''} onChange={(e) => {
-                            handlewaypointChange(index, e.target.value)}}>
-                            <option value="" disabled>
-                                {index === 0 ? 'Partida' : index === waypoints.length - 1 ? 'Destino final' : `Parada ${index}`}
-                            </option>
-                            {locations.map((location) => (
-                                <option key={`${index}-${location.id}`} value={location.id.toString()}>
-                                    {location.name}
-                                </option>
-                            ))}
-                        </Select>
-                        {waypoints.length > 2 && (
-                            <Button onClick={() => removeWaypoint(index)} size="sm" className={styles['remove-button']}>Remover</Button>
-                        )}
-                    </div>
-                ))}
-                <Button onClick={addWaypoint} size="sm" className={styles['add-waypoint-button']}>Adicionar Parada</Button>
-
-                {waypoints.length >= 2 && waypoints.every(waypoint => waypoint) &&  (
-                    <Button onClick={calculateRoute} className={styles['calculate-button']}>
-                        {loadingRoute ? 'Calculando...' : 'Calcular Rota'}
-                    </Button>
-                )}
-
-            </Card>
+            <DestinationSelector
+                waypoints={waypoints}
+                locations={locations}
+                onWaypointChange={handlewaypointChange}
+                onAddWaypoint={addWaypoint}
+                onRemoveWaypoint={removeWaypoint}
+                onCalculateRoute={calculateRoute}
+                loadingRoute={loadingRoute}
+            />
 
             <MapContainer center={center} zoom={15} className={styles['map-container']}>
                 <TileLayer

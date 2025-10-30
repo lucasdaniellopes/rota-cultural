@@ -1,6 +1,6 @@
 import 'leaflet/dist/leaflet.css';
 import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom'
-import MapPage from '@/pages/MapPage';
+import MapPage from '@/pages/MapPage/MapPage';
 import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
  

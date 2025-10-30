@@ -1,0 +1,173 @@
+.header-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 2rem;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* Logo Section */
+.logo-section {
+  display: flex;
+  align-items: center;
+}
+
+.logo-image {
+  height: 3.5rem;
+  width: auto;
+}
+
+/* Navigation */
+.navigation {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: #374151;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+  position: relative;
+}
+
+.nav-icon {
+  font-size: 1.1rem;
+}
+
+.nav-link:hover {
+  color: #1f2937;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -0.25rem;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #3b82f6;
+  transition: width 0.2s ease;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+.nav-link.active {
+  color: #3b82f6;
+}
+
+/* Profile Section */
+.profile-section {
+  display: flex;
+  align-items: center;
+}
+
+.profile-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: #f3f4f6;
+  border: 2px solid #e5e7eb;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-button:hover {
+  background-color: #e5e7eb;
+  border-color: #d1d5db;
+  color: #4b5563;
+}
+
+.profile-button:active {
+  transform: scale(0.95);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0.75rem 1rem;
+  }
+
+  .navigation {
+    gap: 1rem;
+  }
+
+  .nav-link {
+    font-size: 0.875rem;
+  }
+
+  .nav-icon {
+    font-size: 1rem;
+  }
+
+  .logo-image {
+    height: 2.5rem;
+  }
+
+  .profile-button {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .header-content {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .navigation {
+    gap: 0.75rem;
+  }
+
+  .nav-link {
+    font-size: 0.8rem;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .nav-icon {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navigation {
+    gap: 0.5rem;
+  }
+
+  .nav-link {
+    font-size: 0.75rem;
+  }
+
+  .nav-icon {
+    font-size: 1.1rem;
+  }
+
+  .logo-image {
+    height: 2rem;
+  }
+}
