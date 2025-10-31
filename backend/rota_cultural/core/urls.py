@@ -26,4 +26,5 @@ urlpatterns = [
     path('api/docs/', scalar_docs, name='api-docs'),
     path('api/v1/', include('rota_cultural.apps.locations.api.v1.routes')),
     path('api/v1/', include('rota_cultural.apps.routing.api.v1.routes')),
+    path('api/v1/', include('rota_cultural.apps.geocoding.api.v1.routes')),
 ]

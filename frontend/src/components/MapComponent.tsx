@@ -1,16 +1,15 @@
 import {useState, useEffect} from 'react'
 import {MapContainer, TileLayer, Marker, Popup, Polyline} from 'react-leaflet'
 import { Icon } from 'leaflet'
-import 'leaflet/dist/leaflet.css';
+import 'leaflet/dist/leaflet.css'
 import {locationService, type Location} from '@/services/api'
 import {routingService, type RouteData} from '@/services/routing'
-import { Select,SelectContent, SelectItem,SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Button } from './ui/button';
-import { Card } from './ui/card';
+import DestinationSelector from './map/DestinationSelector'
+import styles from '@/styles/MapComponent.module.css';
 
-// Configure o ícone padrão do Leaflet
 delete (Icon.Default.prototype as any)._getIconUrl
 Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
   iconSize: [25, 41],
@@ -27,8 +26,6 @@ export default function MapComponent() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const center: [number,number] = [-7.026368, -37.277010] // Centro de Patos
-    
-    
 
     const handlewaypointChange = (index: number, locationId: string) => {
         const location = locations.find(loc => loc.id === Number(locationId))
@@ -48,8 +45,6 @@ export default function MapComponent() {
         setWaypoints(newWaypoints)
     }
 
-
-
     const calculateRoute = async () => {
         if (waypoints.length < 2 || waypoints.some(waypoint => !waypoint)) return
 
@@ -65,8 +60,6 @@ export default function MapComponent() {
             setLoadingRoute(false)
         }
     }
-
-
 
     useEffect(() => {
         const fetchLocations = async () => {
@@ -86,7 +79,7 @@ export default function MapComponent() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-screen bg-black text-white">
+            <div className={styles['loading-container']}>
                 <p>Carregando mapa...</p>
             </div>
         )
@@ -94,53 +87,25 @@ export default function MapComponent() {
 
     if (error) {
         return (
-            <div className="flex items-center justify-center h-screen bg-black text-white">
+            <div className={styles['error-container']}>
                 <p>{error}</p>
             </div>
         )
     }
-  return (
-        <div className="relative w-full h-screen">
 
-            <Card className="absolute -translate-y-1/2 left-4 top-1/2 right-4 z-[1001] bg-white p-5 shadow-lg w-80 h-auto">
+    return (
+        <div className={styles['map-component-container']}>
+            <DestinationSelector
+                waypoints={waypoints}
+                locations={locations}
+                onWaypointChange={handlewaypointChange}
+                onAddWaypoint={addWaypoint}
+                onRemoveWaypoint={removeWaypoint}
+                onCalculateRoute={calculateRoute}
+                loadingRoute={loadingRoute}
+            />
 
-                {waypoints.map((waypoint, index) => (
-                    <div key={index} className="mb-2">
-                        <Select value={waypoint?.id?.toString() || ''} onValueChange={(value) => {
-                            handlewaypointChange(index, value)}}>
-                            <SelectTrigger className='w-full'>
-                                <SelectValue placeholder={index === 0 ? 'Partida' : index === waypoints.length - 1 ? 'Destino final' : `Parada ${index}`} />
-                            </SelectTrigger>
-                            <SelectContent className='z-[1001]'>
-                                {locations.map((location) => (
-                                    <SelectItem key={`${index}-${location.id}`} value={location.id.toString()}>
-                                        {location.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {waypoints.length > 2 && (
-                            <Button onClick={() => removeWaypoint(index)} size="sm">Remover</Button>
-                        )}
-                    </div>
-                ))}
-                <Button onClick={addWaypoint} size="sm" className="mb-2">Adicionar Parada</Button>
-
-
-           
-
-                {waypoints.length >= 2 && waypoints.every(waypoint => waypoint) &&  (
-                    <Button onClick={calculateRoute}>
-                        {loadingRoute ? 'Calculando...' : 'Calcular Rota'}
-                    </Button>
-                )}
-
-            </Card>
-          
-            
-
-
-            <MapContainer center={center} zoom={15} className='w-full h-full'>
+            <MapContainer center={center} zoom={15} className={styles['map-container']}>
                 <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -152,9 +117,9 @@ export default function MapComponent() {
                         position={[Number(location.latitude), Number(location.longitude)]}
                     >
                         <Popup>
-                            <div>
-                                <h3 className="font-semibold">{location.name}</h3>
-                                <p className="text-sm text-gray-600">{location.description}</p>
+                            <div className={styles['popup-content']}>
+                                <h3>{location.name}</h3>
+                                <p>{location.description}</p>
                             </div>
                         </Popup>
                     </Marker>
