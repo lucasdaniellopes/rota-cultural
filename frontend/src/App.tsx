@@ -1,6 +1,6 @@
 import 'leaflet/dist/leaflet.css';
 import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom'
-import MapPage from '@/pages/MapPage/MapPage';
+import MapPage from '@/pages/MapPage';
 import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
@@ -8,6 +8,7 @@ import TouristPlacesPage from '@/pages/TouristPlacesPage';
 import EventsPage from '@/pages/EventsPage';
 import FavoritesPage from '@/pages/FavoritesPage';
 import ReviewsPage from '@/pages/ReviewsPage';
+import HomePage from '@/pages/HomePage';
  
 export default function App() {
 
