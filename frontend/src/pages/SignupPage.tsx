@@ -26,12 +26,6 @@ function SignupPage() {
           <div className={styles['features-list']}>
             <div className={styles['feature-item']}>
               <svg className={styles['feature-icon']} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.67 14 5 15.17 5 17.5V20H19V17.5C19 15.17 14.33 14 12 14Z" fill="#667eea" stroke="#667eea" strokeWidth="1.5"/>
-              </svg>
-              <span className={styles['feature-text']}>Perfil Personalizado</span>
-            </div>
-            <div className={styles['feature-item']}>
-              <svg className={styles['feature-icon']} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="#667eea" stroke="#667eea" strokeWidth="1.5"/>
               </svg>
               <span className={styles['feature-text']}>Criar Conteúdo</span>
@@ -86,37 +80,19 @@ function SignupPage() {
             </Form.Field>
 
             <Form.Field>
-              <Form.Label htmlFor="confirm-password">Confirmar senha</Form.Label>
-              <Form.Input 
-                id="confirm-password" 
-                type="password" 
-                placeholder="••••••••" 
-                icon={<Lock size={20} />} 
-                required 
-              />
+              <Form.Label htmlFor="account-type">Tipo de Conta</Form.Label>
+              <select 
+                id="account-type" 
+                value={accountType || ''} 
+                onChange={(e) => setAccountType(e.target.value as 'visitor' | 'organizer')}
+                className={styles['account-type-select']}
+                required
+              >
+                <option value="">Selecione um tipo de conta</option>
+                <option value="visitor">Visitante</option>
+                <option value="organizer">Organizador</option>
+              </select>
             </Form.Field>
-
-            <div className={styles['account-type-container']}>
-              <label className={styles['account-type-label']}>Tipo de Conta</label>
-              <div className={styles['account-type-options']}>
-                <button
-                  type="button"
-                  className={`${styles['account-type-btn']} ${accountType === 'visitor' ? styles.active : ''}`}
-                  onClick={() => setAccountType('visitor')}
-                  title="Explorar pontos turísticos e eventos culturais"
-                >
-                  <span className={styles['account-label']}>Visitante</span>
-                </button>
-                <button
-                  type="button"
-                  className={`${styles['account-type-btn']} ${accountType === 'organizer' ? styles.active : ''}`}
-                  onClick={() => setAccountType('organizer')}
-                  title="Criar e gerenciar eventos culturais"
-                >
-                  <span className={styles['account-label']}>Organizador</span>
-                </button>
-              </div>
-            </div>
 
             <Form.Button className={styles['submit-button']}>Cadastrar</Form.Button>
 
