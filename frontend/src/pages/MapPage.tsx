@@ -184,7 +184,7 @@ export default function MapPage() {
             </button>
 
             <button
-              className={`${styles['calculate-btn']} ${!isRouteValid ? styles['disabled'] : ''}`}
+              className={styles['calculate-btn']}
               onClick={calculateRoute}
               disabled={!isRouteValid || loadingRoute}
             >

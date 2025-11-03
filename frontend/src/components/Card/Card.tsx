@@ -5,13 +5,14 @@ import * as S from './style';
 interface CardProps {
   children: ReactNode;
   image: string;
+  onClick?: () => void;
   onFavorite?: () => void;
   isFavorited?: boolean;
 }
 
-function CardRoot({ children, image }: CardProps) {
+function CardRoot({ children, image, onClick }: CardProps) {
   return (
-    <S.CardContainer>
+    <S.CardContainer onClick={onClick}>
       <S.CardImage src={image} alt="Card" />
       <S.CardContent>
         {children}
