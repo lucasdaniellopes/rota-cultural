@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "rota_cultural.apps.categories",
     "rota_cultural.apps.addresses",
     "rota_cultural.apps.places",
+    "rota_cultural.apps.geocoding",
     "django.contrib.gis",
     "drf_spectacular",
 ]
@@ -169,3 +170,7 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 OSRM_API_URL = os.getenv("OSRM_API_URL")
+
+# Nominatim settings
+NOMINATIM_BASE_URL = os.getenv("NOMINATIM_BASE_URL", "https://nominatim.openstreetmap.org")
+NOMINATIM_USER_AGENT = os.getenv("NOMINATIM_USER_AGENT", "RotaCultural/1.0 (https://github.com/lucasdaniellopes/rota-cultural)")
