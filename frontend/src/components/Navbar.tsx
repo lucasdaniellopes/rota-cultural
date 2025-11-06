@@ -14,7 +14,7 @@ function Navbar({ isAuthenticated = true, onLogout }: NavbarProps) {
   const navItems = [
     { id: 'inicio', label: 'Início', icon: Home, href: '/' },
     { id: 'eventos', label: 'Eventos', icon: Calendar, href: '/eventos' },
-    { id: 'mapa', label: 'Mapa', icon: Map, href: '/map' },
+    { id: 'mapa', label: 'Mapa', icon: Map, href: '/mapa' },
     { id: 'pontos', label: 'Pontos Turísticos', icon: MapPin, href: '/pontos-turisticos' },
   ];
 
@@ -24,7 +24,7 @@ function Navbar({ isAuthenticated = true, onLogout }: NavbarProps) {
     if (onLogout) {
       onLogout();
     }
-    navigate('/login');
+    navigate('/entrar');
   };
 
   return (

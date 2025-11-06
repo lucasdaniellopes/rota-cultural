@@ -18,6 +18,6 @@ export interface Location {
 export const locationService = {
     async getLocations(): Promise<Location[]> {
         const response = await api.get('/locations/')
-        return response.data
+        return Array.isArray(response.data) ? response.data : response.data.results || []
     }
 }

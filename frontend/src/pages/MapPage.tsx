@@ -86,10 +86,12 @@ export default function MapPage() {
     const fetchLocations = async () => {
       try {
         const data = await locationService.getLocations();
-        setLocations(data);
+        // Garante que sempre é um array
+        setLocations(Array.isArray(data) ? data : []);
       } catch (err) {
         setError('Erro ao carregar localizações');
         console.error(err);
+        setLocations([]);
       } finally {
         setLoading(false);
       }
@@ -184,7 +186,7 @@ export default function MapPage() {
             </button>
 
             <button
-              className={`${styles['calculate-btn']} ${!isRouteValid ? styles['disabled'] : ''}`}
+              className={styles['calculate-btn']}
               onClick={calculateRoute}
               disabled={!isRouteValid || loadingRoute}
             >
