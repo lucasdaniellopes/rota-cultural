@@ -1,4 +1,4 @@
-import { Calendar, Clock, MapPin, Search } from 'lucide-react';
+import { Calendar, Clock, MapPin, Search, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -73,10 +73,21 @@ function EventsPage() {
       
       <section className={styles['header-section']}>
         <div className={styles['header-container']}>
-          <h1 className={styles['header-title']}>Eventos</h1>
-          <p className={styles['header-subtitle']}>
-            {filteredEvents.length} Eventos Encontrados
-          </p>
+          <div className={styles['header-content']}>
+            <div>
+              <h1 className={styles['header-title']}>Eventos</h1>
+              <p className={styles['header-subtitle']}>
+                {filteredEvents.length} Eventos Encontrados
+              </p>
+            </div>
+            <button 
+              className={styles['create-button']}
+              onClick={() => navigate('/eventos/criar')}
+            >
+              <Plus size={20} />
+              Criar Evento
+            </button>
+          </div>
         </div>
       </section>
 

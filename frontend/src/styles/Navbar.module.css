@@ -77,6 +77,40 @@
   gap: 0.75rem;
 }
 
+.profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -3px;
+}
+
+.profile-btn:hover {
+  color: #ffffff;
+}
+
+.profile-btn.active {
+  color: #ffffff;
+  border-bottom-color: #ffffff;
+}
+
+.profile-icon {
+  display: inline-flex;
+}
+
+.profile-label {
+  display: inline;
+}
+
 .favorites-btn {
   display: flex;
   align-items: center;
@@ -185,12 +219,14 @@
     gap: 0.5rem;
   }
 
+  .profile-btn,
   .favorites-btn,
   .logout-btn {
     padding: 0.5rem 0.75rem;
     font-size: 0.75rem;
   }
 
+  .profile-label,
   .favorites-label,
   .logout-label {
     display: none;
@@ -219,6 +255,7 @@
     gap: 0.35rem;
   }
 
+  .profile-btn,
   .favorites-btn,
   .logout-btn {
     padding: 0.4rem 0.5rem;
