@@ -11,6 +11,7 @@ import EventDetailPage from '@/pages/EventDetailPage';
 import FavoritesPage from '@/pages/FavoritesPage';
 import ReviewsPage from '@/pages/ReviewsPage';
 import HomePage from '@/pages/HomePage';
+import ProfilePage from '@/pages/ProfilePage';
  
 export default function App() {
 
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/eventos/:id" element={<EventDetailPage />} />
         <Route path="/favoritos" element={<FavoritesPage />} />
         <Route path="/avaliacoes" element={<ReviewsPage />} />
+        <Route path="/perfil" element={<ProfilePage />} />
       </Routes>
     </BrowserRouter>
   )
