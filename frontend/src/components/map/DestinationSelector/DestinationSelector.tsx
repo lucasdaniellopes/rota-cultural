@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Plus, X, MapPin } from "lucide-react";
 import type { Location } from "@/services/api";
 import { Button } from "@/components/ui/Button";
@@ -23,6 +24,13 @@ export default function DestinationSelector({
     onCalculateRoute,
     loadingRoute
 }: DestinationSelectorProps) {
+    const [activeWaypointMenu, setActiveWaypointMenu] = useState<number | null>(null);
+
+    const handleWaypointChange = (index: number, location: Location) => {
+        onWaypointChange(index, location.id.toString());
+        setActiveWaypointMenu(null);
+    };
+
     return (
         <div className={styles['destination-selector-container']}>
             <Card className={styles['destination-card']}>
@@ -38,20 +46,34 @@ export default function DestinationSelector({
                                 </div>
                                 <div className={styles['waypoint-connector']}></div>
                                 <div className={styles['waypoint-input-group']}>
-                                    <select
-                                        value={waypoint?.id?.toString() || ''}
-                                        onChange={(e) => onWaypointChange(index, e.target.value)}
-                                        className={styles['waypoint-select']}
+                                    <button
+                                        className={styles['waypoint-button']}
+                                        onClick={() => setActiveWaypointMenu(activeWaypointMenu === index ? null : index)}
                                     >
-                                        <option value="" disabled>
-                                            {index === 0 ? 'Partida' : index === waypoints.length - 1 && waypoints.length > 1 ? 'Destino' : `Parada ${index}`}
-                                        </option>
-                                        {locations.map((location) => (
-                                            <option key={`${index}-${location.id}`} value={location.id.toString()}>
-                                                {location.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        {waypoint ? waypoint.name : (
+                                            index === 0 ? 'Partida' :
+                                            index === waypoints.length - 1 && waypoints.length > 1 ? 'Destino' :
+                                            `Parada ${index}`
+                                        )}
+                                    </button>
+
+                                    {activeWaypointMenu === index && (
+                                        <div className={styles['waypoint-dropdown']}>
+                                            {locations.map(location => (
+                                                <button
+                                                    key={location.id}
+                                                    className={styles['dropdown-item']}
+                                                    onClick={() => handleWaypointChange(index, location)}
+                                                >
+                                                    <MapPin size={14} />
+                                                    <div className={styles['dropdown-item-content']}>
+                                                        <div className={styles['dropdown-item-name']}>{location.name}</div>
+                                                        <div className={styles['dropdown-item-desc']}>{location.description}</div>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                     {waypoints.length > 2 && (
                                         <button
                                             className={styles['remove-waypoint-btn']}

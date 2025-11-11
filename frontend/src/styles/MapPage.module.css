@@ -445,4 +445,304 @@
   .legend-item {
     font-size: 0.85rem;
   }
+
+  /* Address Search Section - Mobile */
+  .address-search-section {
+    gap: 0.5rem;
+  }
+
+  .toggle-search-btn {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .address-search-container {
+    padding: 0.75rem;
+  }
+
+  /* Location Modal - Mobile */
+  .location-modal {
+    margin: 0.5rem;
+    padding: 0.875rem;
+    max-width: none;
+    width: calc(100% - 1rem);
+  }
+
+  .location-modal-header h4 {
+    font-size: 0.85rem;
+  }
+
+  .modal-location-name {
+    font-size: 0.9rem;
+  }
+
+  .modal-location-address {
+    font-size: 0.75rem;
+  }
+
+  .modal-add-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Address Search Section */
+.address-search-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.toggle-search-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background-color: #f8f8f8;
+  border: 1px solid #141414;
+  border-radius: 0.375rem;
+  color: #141414;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-search-btn:hover {
+  background-color: #141414;
+  color: #ffffff;
+}
+
+.address-search-container {
+  margin-top: 0.5rem;
+  padding: 1rem;
+  background-color: #f8f8f8;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.375rem;
+}
+
+/* Adjust AddressSearch component styles to fit the sidebar theme */
+.address-search-container :global(.address-search-container) {
+  width: 100%;
+}
+
+.address-search-container :global(.search-input-container) {
+  background-color: #ffffff;
+  border-color: #ddd;
+}
+
+.address-search-container :global(.search-input-container:focus-within) {
+  border-color: #141414;
+  box-shadow: 0 0 0 2px rgba(20, 20, 20, 0.1);
+}
+
+.address-search-container :global(.search-input) {
+  font-size: 0.875rem;
+  color: #1a1a1a;
+}
+
+.address-search-container :global(.search-input::placeholder) {
+  color: #999;
+}
+
+.address-search-container :global(.clear-button) {
+  color: #666;
+}
+
+.address-search-container :global(.clear-button:hover) {
+  background-color: #f0f0f0;
+  color: #1a1a1a;
+}
+
+.address-search-container :global(.results-container) {
+  background-color: #ffffff;
+  border-color: #ddd;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.address-search-container :global(.result-item) {
+  padding: 0.75rem;
+  transition: background-color 0.2s ease;
+}
+
+.address-search-container :global(.result-item:hover),
+.address-search-container :global(.result-item.selected) {
+  background-color: #f8f8f8;
+}
+
+.address-search-container :global(.result-name) {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.address-search-container :global(.result-location) {
+  color: #666;
+}
+
+.address-search-container :global(.result-category) {
+  color: #999;
+}
+
+.address-search-container :global(.loading-indicator) {
+  background-color: #f8f8f8;
+  border-color: #e0e0e0;
+  color: #666;
+}
+
+.address-search-container :global(.spinner) {
+  border-top-color: #141414;
+}
+
+.address-search-container :global(.no-results) {
+  color: #666;
+}
+
+.address-search-container :global(.no-results p:first-child) {
+  color: #1a1a1a;
+}
+
+/* Location Modal */
+.location-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.location-modal {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem;
+  max-width: 320px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.location-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.location-modal-header h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #666;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background-color: #f0f0f0;
+  color: #1a1a1a;
+}
+
+.location-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.modal-location-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.modal-location-address {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.modal-add-btn {
+  background-color: #141414;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-add-btn:hover {
+  background-color: #000000;
+  transform: translateY(-1px);
+}
+
+.modal-add-btn:active {
+  transform: translateY(0);
+}
+
+/* Add to route button in popup */
+.add-to-route-btn {
+  background-color: #141414;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 0.75rem;
+  width: 100%;
+}
+
+.add-to-route-btn:hover {
+  background-color: #000000;
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  z-index: 1000;
+}
+
+.loading-overlay .loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.loading-overlay p {
+  margin: 0;
+  font-size: 0.9rem;
 }
