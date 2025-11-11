@@ -8,6 +8,7 @@ import TouristPlacesPage from '@/pages/TouristPlacesPage';
 import TouristPlaceDetailPage from '@/pages/TouristPlaceDetailPage';
 import EventsPage from '@/pages/EventsPage';
 import EventDetailPage from '@/pages/EventDetailPage';
+import CreateEventPage from '@/pages/CreateEventPage';
 import FavoritesPage from '@/pages/FavoritesPage';
 import ReviewsPage from '@/pages/ReviewsPage';
 import HomePage from '@/pages/HomePage';
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/pontos-turisticos" element={<TouristPlacesPage />} />
         <Route path="/pontos-turisticos/:id" element={<TouristPlaceDetailPage />} />
         <Route path="/eventos" element={<EventsPage />} />
+        <Route path="/eventos/criar" element={<CreateEventPage />} />
         <Route path="/eventos/:id" element={<EventDetailPage />} />
         <Route path="/favoritos" element={<FavoritesPage />} />
         <Route path="/avaliacoes" element={<ReviewsPage />} />
