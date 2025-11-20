@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMapEvents } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { locationService, type Location } from '@/services/api';
 import { routingService, type RouteData } from '@/services/routing';
+import { geocodingService, type NominatimResult, type ReverseGeocodeResult } from '@/services/geocoding';
+import AddressSearch from '@/components/map/AddressSearch';
 import Navbar from '@/components/Navbar';
-import { Plus, X, MapPin, Navigation } from 'lucide-react';
+import { Plus, X, MapPin, Navigation, Search } from 'lucide-react';
 import styles from '@/styles/MapPage.module.css';
 
 // Configure o ícone padrão do Leaflet
@@ -36,14 +38,92 @@ export default function MapPage() {
   const [error, setError] = useState<string | null>(null);
   const [routeDistance, setRouteDistance] = useState<string | null>(null);
   const [activeWaypointMenu, setActiveWaypointMenu] = useState<number | null>(null);
+  const [showAddressSearch, setShowAddressSearch] = useState(false);
+  const [clickedLocation, setClickedLocation] = useState<ReverseGeocodeResult | null>(null);
+  const [loadingAddress, setLoadingAddress] = useState(false);
 
-  const center: [number, number] = [-7.026368, -37.277010]; // Centro de Patos
+  const center: [number, number] = [
+    parseFloat(import.meta.env.VITE_MAP_CENTER_LAT),
+    parseFloat(import.meta.env.VITE_MAP_CENTER_LNG)
+  ];
+
+  function MapClickHandler({ onMapClick }: { onMapClick: (lat: number, lng: number) => void }) {
+    useMapEvents({
+      click: (e) => {
+        onMapClick(e.latlng.lat, e.latlng.lng);
+      },
+    });
+    return null;
+  }
 
   const handleWaypointChange = (index: number, location: Location) => {
     const newWaypoints = [...waypoints];
     newWaypoints[index] = { ...newWaypoints[index], location };
     setWaypoints(newWaypoints);
     setActiveWaypointMenu(null);
+  };
+
+  const handleMapClick = async (lat: number, lng: number) => {
+    setLoadingAddress(true);
+    try {
+      const addressData = await geocodingService.reverseGeocode(lat, lng);
+      if (addressData) {
+        setClickedLocation(addressData);
+      }
+    } catch (error) {
+      console.error('Reverse geocoding error:', error);
+    } finally {
+      setLoadingAddress(false);
+    }
+  };
+
+  const handleAddressSearchSelect = (result: NominatimResult) => {
+
+    const newLocation: Location = {
+      id: Date.now(), 
+      name: result.display_name.split(',')[0].trim(),
+      latitude: parseFloat(result.lat),
+      longitude: parseFloat(result.lon),
+      description: `Adicionado via busca: ${result.display_name}`
+    };
+   
+    setLocations(prev => [...prev, newLocation]);
+
+    const emptyIndex = waypoints.findIndex(wp => wp.location === null);
+    if (emptyIndex !== -1) {
+      const newWaypoints = [...waypoints];
+      newWaypoints[emptyIndex] = { ...newWaypoints[emptyIndex], location: newLocation };
+      setWaypoints(newWaypoints);
+    } else {
+      const newLabel = `Parada ${waypoints.length - 1}`;
+      setWaypoints([...waypoints, { location: newLocation, label: newLabel }]);
+    }
+  };
+
+  const addClickedLocationToWaypoint = () => {
+    if (!clickedLocation) return;
+
+    const newLocation: Location = {
+      id: Date.now(),
+      name: clickedLocation.display_name.split(',')[0].trim(),
+      latitude: parseFloat(clickedLocation.lat),
+      longitude: parseFloat(clickedLocation.lon),
+      description: clickedLocation.display_name
+    };
+
+    setLocations(prev => [...prev, newLocation]);
+
+    const emptyIndex = waypoints.findIndex(wp => wp.location === null);
+    if (emptyIndex !== -1) {
+      const newWaypoints = [...waypoints];
+      newWaypoints[emptyIndex] = { ...newWaypoints[emptyIndex], location: newLocation };
+      setWaypoints(newWaypoints);
+    } else {
+      const newLabel = `Parada ${waypoints.length - 1}`;
+      setWaypoints([...waypoints, { location: newLocation, label: newLabel }]);
+    }
+
+    setClickedLocation(null);
   };
 
   const addWaypoint = () => {
@@ -86,10 +166,11 @@ export default function MapPage() {
     const fetchLocations = async () => {
       try {
         const data = await locationService.getLocations();
-        setLocations(data);
+        setLocations(Array.isArray(data) ? data : []);
       } catch (err) {
         setError('Erro ao carregar localizações');
         console.error(err);
+        setLocations([]);
       } finally {
         setLoading(false);
       }
@@ -183,8 +264,28 @@ export default function MapPage() {
               Adicionar Parada
             </button>
 
+            <div className={styles['address-search-section']}>
+              <button
+                className={styles['toggle-search-btn']}
+                onClick={() => setShowAddressSearch(!showAddressSearch)}
+              >
+                <Search size={18} />
+                {showAddressSearch ? 'Ocultar Busca' : 'Buscar Endereço'}
+              </button>
+
+              {showAddressSearch && (
+                <div className={styles['address-search-container']}>
+                  <AddressSearch
+                    onLocationSelect={handleAddressSearchSelect}
+                    placeholder="Buscar lugares turísticos, endereços..."
+                    city="Patos"
+                  />
+                </div>
+              )}
+            </div>
+
             <button
-              className={`${styles['calculate-btn']} ${!isRouteValid ? styles['disabled'] : ''}`}
+              className={styles['calculate-btn']}
               onClick={calculateRoute}
               disabled={!isRouteValid || loadingRoute}
             >
@@ -224,11 +325,13 @@ export default function MapPage() {
           </div>
         </div>
 
-        <MapContainer center={center} zoom={15} className={styles['map']}>
+        <MapContainer center={center} zoom={parseInt(import.meta.env.VITE_MAP_DEFAULT_ZOOM)} className={styles['map']}>
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
+
+          <MapClickHandler onMapClick={handleMapClick} />
 
           {waypoints.map((waypoint, index) => {
             if (!waypoint.location) return null;
@@ -264,6 +367,25 @@ export default function MapPage() {
             );
           })}
 
+          {clickedLocation && (
+            <Marker
+              position={[parseFloat(clickedLocation.lat), parseFloat(clickedLocation.lon)]}
+            >
+              <Popup>
+                <div className={styles['popup-content']}>
+                  <h4>{clickedLocation.display_name.split(',')[0].trim()}</h4>
+                  <p>{clickedLocation.display_name}</p>
+                  <button
+                    onClick={addClickedLocationToWaypoint}
+                    className={styles['add-to-route-btn']}
+                  >
+                    Adicionar à Rota
+                  </button>
+                </div>
+              </Popup>
+            </Marker>
+          )}
+
           {routeData && (
             <Polyline
               positions={routeData.geometry.map((coord: [number, number]) => [coord[1], coord[0]])}
@@ -273,7 +395,45 @@ export default function MapPage() {
               dashArray="5, 5"
             />
           )}
+
+          {loadingAddress && (
+            <div className={styles['loading-overlay']}>
+              <div className={styles['loading-spinner']}></div>
+              <p>Buscando endereço...</p>
+            </div>
+          )}
         </MapContainer>
+
+        {/* Location Modal */}
+        {clickedLocation && (
+          <div className={styles['location-modal-overlay']}>
+            <div className={styles['location-modal']}>
+              <div className={styles['location-modal-header']}>
+                <h4>Local Selecionado</h4>
+                <button
+                  onClick={() => setClickedLocation(null)}
+                  className={styles['modal-close-btn']}
+                >
+                  ×
+                </button>
+              </div>
+              <div className={styles['location-modal-content']}>
+                <p className={styles['modal-location-name']}>
+                  {clickedLocation.display_name.split(',')[0].trim()}
+                </p>
+                <p className={styles['modal-location-address']}>
+                  {clickedLocation.display_name}
+                </p>
+                <button
+                  onClick={addClickedLocationToWaypoint}
+                  className={styles['modal-add-btn']}
+                >
+                  Adicionar à Rota
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

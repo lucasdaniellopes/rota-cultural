@@ -27,4 +27,10 @@ urlpatterns = [
     path('api/v1/', include('rota_cultural.apps.locations.api.v1.routes')),
     path('api/v1/', include('rota_cultural.apps.routing.api.v1.routes')),
     path('api/v1/', include('rota_cultural.apps.geocoding.api.v1.routes')),
+    path('api/v1/', include('rota_cultural.apps.users.api.v1.routes')),
+    path('api/v1/', include('rota_cultural.apps.favorites.api.v1.routes')),
+    path('api/v1/', include('rota_cultural.apps.reviews.api.v1.routes')),
+    path('api/v1/', include('rota_cultural.apps.events.api.v1.routes')),
+    path('api/v1/', include('rota_cultural.apps.addresses.api.v1.routes')),
+    path('api/v1/', include('rota_cultural.apps.categories.api.v1.routes')),
 ]

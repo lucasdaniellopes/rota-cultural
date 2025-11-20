@@ -1,0 +1,52 @@
+[
+  {
+    "model": "categories.category",
+    "pk": 1,
+    "fields": {
+      "name": "Praças",
+      "description": "Praças e áreas públicas de lazer",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "categories.category",
+    "pk": 2,
+    "fields": {
+      "name": "Igrejas",
+      "description": "Templos religiosos e igrejas históricas",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "categories.category",
+    "pk": 3,
+    "fields": {
+      "name": "Museus",
+      "description": "Museus e centros culturais",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "categories.category",
+    "pk": 4,
+    "fields": {
+      "name": "Teatros",
+      "description": "Teatros e casas de espetáculos",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "categories.category",
+    "pk": 5,
+    "fields": {
+      "name": "Parques",
+      "description": "Parques e áreas de recreação",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  }
+]
