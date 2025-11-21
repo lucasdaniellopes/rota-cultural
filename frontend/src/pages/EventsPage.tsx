@@ -1,75 +1,97 @@
 import { Calendar, Clock, MapPin, Search, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Card from '../components/Card';
+import { eventsService, type Event } from '@/services/events';
+import { useAuth } from '@/contexts/AuthContext';
 import styles from '../styles/EventsPage.module.css';
 
 function EventsPage() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const [events, setEvents] = useState<Event[]>([]);
+  const [categories, setCategories] = useState<string[]>(['Todas Categorias']);
   const [favorited, setFavorited] = useState<{ [key: string]: boolean }>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todas Categorias');
   const [selectedLocation, setSelectedLocation] = useState('Todas Regiões');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const events = [
-    {
-      id: 'motofest',
-      title: 'MotoFest',
-      image: '/MotoFest.png',
-      description: 'Festival de motociclismo que combina música, gastronomia e camaradagem entre motociclistas e público em geral',
-      date: '30/08/2025',
-      time: '18:00 - 23:00',
-      location: 'Patos - PB',
-      price: 'Gratuito',
-      category: 'Música',
-    },
-    {
-      id: 'terreirinho',
-      title: 'Terreirinho',
-      image: '/Terreirinho.png',
-      description: 'Espaço ecológico e cultural que oferece atividades em um verde e apresentações culturais de artistas locais',
-      date: '15/09/2025',
-      time: '18:00 - 23:00',
-      location: 'Patos - PB',
-      price: 'R$ 25,00',
-      category: 'Cultural',
-    },
-    {
-      id: 'sao-joao',
-      title: 'São João de Patos',
-      image: '/SãoJoão.png',
-      description: 'Uma grande festa junina com estrutura de shows no Terreno do Patos. Festa bem recebida socialmente entre maiores e menores dias',
-      date: '23/06/2025',
-      time: '18:00 - 23:00',
-      location: 'Patos - PB',
-      price: 'R$ 30,00',
-      category: 'Festas Populares',
-    },
-  ];
-
-  const categories = ['Todas Categorias', 'Música', 'Cultural', 'Festas Populares', 'Esportes'];
   const locations = ['Todas Regiões', 'Patos - PB', 'Região Metropolitana'];
 
-  const toggleFavorite = (id: string) => {
+  useEffect(() => {
+    loadEvents();
+    loadCategories();
+  }, []);
+
+  const loadEvents = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await eventsService.getEvents({ filter: 'upcoming' });
+      setEvents(data);
+    } catch (err: any) {
+      setError('Falha ao carregar eventos. Tente novamente.');
+      console.error('Error loading events:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const data = await eventsService.getCategories();
+      const categoryNames = data.map(cat => cat.name);
+      setCategories(['Todas Categorias', ...categoryNames]);
+    } catch (err) {
+      console.error('Error loading categories:', err);
+    }
+  };
+
+  const toggleFavorite = (id: number) => {
     setFavorited(prev => ({
       ...prev,
       [id]: !prev[id]
     }));
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR');
+  };
+
+  const formatTime = (timeString: string) => {
+    return timeString.slice(0, 5); // HH:MM
+  };
+
+  const formatPrice = (price: number | string) => {
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    if (numPrice === 0) return 'Gratuito';
+    return `R$ ${numPrice.toFixed(2).replace('.', ',')}`;
+  };
+
   const filteredEvents = events.filter(event => {
-    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'Todas Categorias' || event.category === selectedCategory;
-    const matchesLocation = selectedLocation === 'Todas Regiões' || event.location === selectedLocation;
+    const matchesCategory = selectedCategory === 'Todas Categorias' || event.category_name === selectedCategory;
+    const matchesLocation = selectedLocation === 'Todas Regiões' || event.location_name?.includes(selectedLocation);
     
     return matchesSearch && matchesCategory && matchesLocation;
   });
 
+  const handleCreateEvent = () => {
+    if (!isAuthenticated) {
+      navigate('/entrar');
+      return;
+    }
+    navigate('/eventos/criar');
+  };
+
   return (
     <div>
-      <Navbar isAuthenticated={true} />
+      <Navbar />
       
       <section className={styles['header-section']}>
         <div className={styles['header-container']}>
@@ -82,7 +104,7 @@ function EventsPage() {
             </div>
             <button 
               className={styles['create-button']}
-              onClick={() => navigate('/eventos/criar')}
+              onClick={handleCreateEvent}
             >
               <Plus size={20} />
               Criar Evento
@@ -133,50 +155,62 @@ function EventsPage() {
 
       <section className={styles['content-section']}>
         <div className={styles['content-container']}>
-          <div className={styles['cards-grid']}>
-            {filteredEvents.map(event => (
-              <Card 
-                key={event.id}
-                image={event.image}
-                onClick={() => navigate(`/eventos/${event.id}`)}
-              >
-                <Card.TitleWithFav 
-                  onFavorite={() => toggleFavorite(event.id)}
-                  isFavorited={favorited[event.id] || false}
-                >
-                  {event.title}
-                </Card.TitleWithFav>
-                
-                <Card.Description>
-                  {event.description}
-                </Card.Description>
-                
-                <Card.Meta>
-                  <Card.MetaItem icon={<Calendar size={14} />}>
-                    {event.date}
-                  </Card.MetaItem>
-                  <Card.MetaItem icon={<Clock size={14} />}>
-                    {event.time}
-                  </Card.MetaItem>
-                  <Card.MetaItem icon={<MapPin size={14} />}>
-                    {event.location}
-                  </Card.MetaItem>
-                  <Card.MetaItem>
-                    {event.price}
-                  </Card.MetaItem>
-                </Card.Meta>
-                
-                <Card.Action onClick={() => navigate(`/eventos/${event.id}`)}>
-                  Como Chegar
-                </Card.Action>
-              </Card>
-            ))}
-          </div>
-
-          {filteredEvents.length === 0 && (
+          {isLoading ? (
             <div className={styles['empty-state']}>
-              <p className={styles['empty-text']}>Nenhum evento encontrado com os filtros selecionados.</p>
+              <p className={styles['empty-text']}>Carregando eventos...</p>
             </div>
+          ) : error ? (
+            <div className={styles['empty-state']}>
+              <p className={styles['empty-text']}>{error}</p>
+            </div>
+          ) : (
+            <>
+              <div className={styles['cards-grid']}>
+                {filteredEvents.map(event => (
+                  <Card 
+                    key={event.id}
+                    image={event.image_url || "/event-placeholder.jpg"}
+                    onClick={() => navigate(`/eventos/${event.id}`)}
+                  >
+                    <Card.TitleWithFav 
+                      onFavorite={() => toggleFavorite(event.id)}
+                      isFavorited={favorited[event.id] || false}
+                    >
+                      {event.name}
+                    </Card.TitleWithFav>
+                    
+                    <Card.Description>
+                      {event.description}
+                    </Card.Description>
+                    
+                    <Card.Meta>
+                      <Card.MetaItem icon={<Calendar size={14} />}>
+                        {formatDate(event.start_date)}
+                      </Card.MetaItem>
+                      <Card.MetaItem icon={<Clock size={14} />}>
+                        {formatTime(event.start_time)} - {formatTime(event.end_time)}
+                      </Card.MetaItem>
+                      <Card.MetaItem icon={<MapPin size={14} />}>
+                        {event.location_name || 'Local não especificado'}
+                      </Card.MetaItem>
+                      <Card.MetaItem>
+                        {formatPrice(event.price)}
+                      </Card.MetaItem>
+                    </Card.Meta>
+                    
+                    <Card.Action onClick={() => navigate(`/eventos/${event.id}`)}>
+                      Como Chegar
+                    </Card.Action>
+                  </Card>
+                ))}
+              </div>
+
+              {filteredEvents.length === 0 && !isLoading && (
+                <div className={styles['empty-state']}>
+                  <p className={styles['empty-text']}>Nenhum evento encontrado com os filtros selecionados.</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
