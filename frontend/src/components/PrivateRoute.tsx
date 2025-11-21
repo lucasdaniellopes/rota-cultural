@@ -6,9 +6,9 @@ interface PrivateRouteProps {
 }
 
 export function PrivateRoute({ children }: PrivateRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isInitialized } = useAuth();
 
-  if (isLoading) {
+  if (!isInitialized) {
     return (
       <div style={{
         display: 'flex',

@@ -40,6 +40,7 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitialized: boolean;
   error: string | null;
   login: (data: LoginData) => Promise<void>;
   signup: (data: SignupData) => Promise<void>;
@@ -53,6 +54,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Verificar se há tokens salvos ao montar o componente
@@ -61,7 +63,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const accessToken = localStorage.getItem('access_token');
       if (accessToken) {
         try {
-          setIsLoading(true);
           const response = await api.get('/users/me/');
           setUser(response.data);
         } catch (err: any) {
@@ -69,10 +70,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
           setUser(null);
-        } finally {
-          setIsLoading(false);
         }
       }
+      setIsInitialized(true);
     };
 
     initializeAuth();
@@ -192,6 +192,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     isAuthenticated: !!user,
     isLoading,
+    isInitialized,
     error,
     login,
     signup,

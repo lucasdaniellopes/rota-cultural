@@ -2,11 +2,13 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.conf import settings
 
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -19,6 +21,15 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password': {'write_only': True}
         }
+
+    def get_avatar(self, obj):
+        if obj.avatar:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.avatar.url)
+            else:
+                return f"{settings.MEDIA_URL}{obj.avatar.name}"
+        return None
 
     def create(self, validated_data):
         password = validated_data.pop('password')
@@ -39,13 +50,24 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
 class UserListSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
-            'is_tourist', 'date_joined'
+            'is_tourist', 'date_joined', 'avatar'
         ]
         read_only_fields = ['id', 'date_joined']
+
+    def get_avatar(self, obj):
+        if obj.avatar:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.avatar.url)
+            else:
+                return f"{settings.MEDIA_URL}{obj.avatar.name}"
+        return None
 
 
 class LoginSerializer(serializers.Serializer):

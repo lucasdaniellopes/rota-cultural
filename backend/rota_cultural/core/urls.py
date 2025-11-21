@@ -19,6 +19,8 @@ from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView
 from .views import scalar_docs
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -34,3 +36,7 @@ urlpatterns = [
     path('api/v1/', include('rota_cultural.apps.addresses.api.v1.routes')),
     path('api/v1/', include('rota_cultural.apps.categories.api.v1.routes')),
 ]
+
+# Servir arquivos de mídia em desenvolvimento
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
