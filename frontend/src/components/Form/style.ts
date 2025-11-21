@@ -19,6 +19,11 @@ export const HeaderTitle = styled.h2`
   color: #1a1a1a;
   margin: 0;
   margin-bottom: 0.5rem;
+
+  /* Tema escuro para login */
+  .login-form & {
+    color: #ffffff;
+  }
 `;
 
 export const DescriptionText = styled.p`
@@ -38,6 +43,11 @@ export const LabelText = styled.label`
   font-weight: 600;
   color: #1a1a1a;
   cursor: pointer;
+
+  /* Tema escuro para login */
+  .login-form & {
+    color: #ffffff;
+  }
 `;
 
 export const InputGroupContainer = styled.div`
@@ -128,6 +138,15 @@ export const ForgotPasswordLink = styled.a`
     color: #1e40af;
     text-decoration: underline;
   }
+
+  /* Tema escuro para login */
+  .login-form & {
+    color: #ffffff;
+  }
+
+  .login-form &:hover {
+    color: #b0b0b0;
+  }
 `;
 
 export const PrimaryButton = styled.button`
@@ -161,6 +180,11 @@ export const SignUpContainer = styled.p`
   font-size: 0.875rem;
   color: #666666;
   margin: 0;
+
+  /* Tema escuro para login */
+  .login-form & {
+    color: #ffffff;
+  }
 `;
 
 export const SignUpLink = styled.a`
@@ -172,6 +196,17 @@ export const SignUpLink = styled.a`
 
   &:hover {
     color: #1e40af;
+    text-decoration: underline;
+  }
+
+  /* Tema escuro para login - destaque especial */
+  .login-form & {
+    color: #667eea;
+    font-weight: 700;
+  }
+
+  .login-form &:hover {
+    color: #7b9eff;
     text-decoration: underline;
   }
 `;

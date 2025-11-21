@@ -116,6 +116,7 @@ function HomePage() {
               <Card 
                 key={event.id}
                 image={event.image}
+                onClick={() => navigate(`/eventos/${event.id}`)}
               >
                 <Card.TitleWithFav 
                   onFavorite={() => toggleFavorite(event.id)}
@@ -167,6 +168,7 @@ function HomePage() {
               <Card 
                 key={place.id}
                 image={place.image}
+                onClick={() => navigate(`/pontos-turisticos/${place.id}`)}
               >
                 <Card.TitleWithFav 
                   onFavorite={() => toggleFavorite(place.id)}

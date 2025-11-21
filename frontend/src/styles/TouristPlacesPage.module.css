@@ -1,6 +1,6 @@
 .header-section {
   width: 100%;
-  background: linear-gradient(135deg, #0052cc 0%, #003399 100%);
+  background: #212121;
   padding: 2rem 1.5rem;
 }
 
@@ -89,13 +89,13 @@
 }
 
 .filter-select:hover {
-  border-color: #0052cc;
+  border-color: #141414;
 }
 
 .filter-select:focus {
   outline: none;
-  border-color: #0052cc;
-  box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.1);
+  border-color: #141414;
+  box-shadow: 0 0 0 2px rgba(20, 20, 20, 0.1);
 }
 
 .content-section {

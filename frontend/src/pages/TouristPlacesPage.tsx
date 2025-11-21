@@ -20,6 +20,8 @@ function TouristPlacesPage() {
       description: 'A Igreja estrutura e a construção de 8 de Joséde Patos é uma estrutura bem conservada, localizada em Patos, Paraíba com grande importância histórica',
       location: 'Patos - PB',
       category: 'Religioso',
+      rating: 4.7,
+      reviews: 342,
     },
     {
       id: 'igreja-nossa-senhora',
@@ -28,6 +30,8 @@ function TouristPlacesPage() {
       description: 'A Igreja de Nossa Senhora da Conceição, localizada no centro de Patos, é um importante ponto religioso e turístico da cidade com sua arquitetura característica',
       location: 'Patos - PB',
       category: 'Religioso',
+      rating: 4.8,
+      reviews: 521,
     },
     {
       id: 'patos-shopping',
@@ -36,6 +40,8 @@ function TouristPlacesPage() {
       description: 'É um centro comercial localizado na cidade de Patos, oferecendo compras, lazer e entretenimento para toda família',
       location: 'Patos - PB',
       category: 'Comércio',
+      rating: 4.5,
+      reviews: 876,
     },
   ];
 
@@ -118,6 +124,7 @@ function TouristPlacesPage() {
               <Card 
                 key={place.id}
                 image={place.image}
+                onClick={() => navigate(`/pontos-turisticos/${place.id}`)}
               >
                 <Card.TitleWithFav 
                   onFavorite={() => toggleFavorite(place.id)}
@@ -134,10 +141,13 @@ function TouristPlacesPage() {
                   <Card.MetaItem icon={<MapPin size={14} />}>
                     {place.location}
                   </Card.MetaItem>
+                  <Card.MetaItem>
+                    ⭐ {place.rating} ({place.reviews})
+                  </Card.MetaItem>
                 </Card.Meta>
                 
                 <Card.Action onClick={() => navigate(`/pontos-turisticos/${place.id}`)}>
-                  Como Chegar
+                  Ver Detalhes
                 </Card.Action>
               </Card>
             ))}

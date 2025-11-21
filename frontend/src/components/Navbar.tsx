@@ -1,4 +1,4 @@
-import { Home, Calendar, Map, MapPin, LogOut, Heart } from 'lucide-react';
+import { Home, Calendar, Map, MapPin, LogOut, Heart, User } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import styles from '../styles/Navbar.module.css';
 
@@ -14,7 +14,7 @@ function Navbar({ isAuthenticated = true, onLogout }: NavbarProps) {
   const navItems = [
     { id: 'inicio', label: 'Início', icon: Home, href: '/' },
     { id: 'eventos', label: 'Eventos', icon: Calendar, href: '/eventos' },
-    { id: 'mapa', label: 'Mapa', icon: Map, href: '/map' },
+    { id: 'mapa', label: 'Mapa', icon: Map, href: '/mapa' },
     { id: 'pontos', label: 'Pontos Turísticos', icon: MapPin, href: '/pontos-turisticos' },
   ];
 
@@ -24,7 +24,7 @@ function Navbar({ isAuthenticated = true, onLogout }: NavbarProps) {
     if (onLogout) {
       onLogout();
     }
-    navigate('/login');
+    navigate('/entrar');
   };
 
   return (
@@ -50,6 +50,14 @@ function Navbar({ isAuthenticated = true, onLogout }: NavbarProps) {
 
         {isAuthenticated && (
           <div className={styles['action-buttons']}>
+            <button 
+              onClick={() => navigate('/perfil')} 
+              className={`${styles['profile-btn']} ${isActive('/perfil') ? styles.active : ''}`}
+              title="Meu Perfil"
+            >
+              <User size={20} className={styles['profile-icon']} />
+              <span className={styles['profile-label']}>Meu Perfil</span>
+            </button>
             <button 
               onClick={() => navigate('/favoritos')} 
               className={`${styles['favorites-btn']} ${isActive('/favoritos') ? styles.active : ''}`}
