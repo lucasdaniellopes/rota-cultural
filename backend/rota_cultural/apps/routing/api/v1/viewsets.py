@@ -1,11 +1,13 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
 from rota_cultural.apps.locations.models import Location
 from routingpy.routers import OSRM
 
 class RouteViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
     
     @action(detail=False, methods=['post'])
     def calculate(self, request):
