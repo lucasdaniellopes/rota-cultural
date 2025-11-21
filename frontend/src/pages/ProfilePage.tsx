@@ -10,7 +10,6 @@ import {
   XCircle,
   AlertTriangle,
   CheckCircle,
-  Upload,
 } from 'lucide-react';
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -45,7 +44,6 @@ function ProfilePage() {
   const [emailData, setEmailData] = useState({ newEmail: '' });
   const [deleteConfirm, setDeleteConfirm] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar || null);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   // --- Estados de visibilidade de senha ---
   const [showPassword, setShowPassword] = useState(false);
@@ -75,7 +73,7 @@ function ProfilePage() {
 
   // --- Manipuladores de Avatar ---
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       // Validar tipo de arquivo
@@ -90,42 +88,35 @@ function ProfilePage() {
         return;
       }
 
-      setAvatarFile(file);
-
-      // Mostrar preview
+      // Mostrar preview imediatamente
       const reader = new FileReader();
       reader.onload = (event) => {
         setAvatarPreview(event.target?.result as string);
       };
       reader.readAsDataURL(file);
-    }
-  };
 
-  const handleAvatarUpload = async () => {
-    if (!avatarFile) {
-      showNotification('Selecione uma imagem primeiro', 'error');
-      return;
-    }
+      // Fazer upload automático
+      setIsLoading(true);
+      try {
+        const formData = new FormData();
+        formData.append('avatar_upload', file);
 
-    setIsLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('avatar', avatarFile);
+        await api.patch('/users/me_update/', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
 
-      await api.patch('/users/me_update/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      setAvatarFile(null);
-      await refreshUser();
-      showNotification('Avatar atualizado com sucesso!', 'success');
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.detail || 'Falha ao atualizar avatar';
-      showNotification(errorMessage, 'error');
-    } finally {
-      setIsLoading(false);
+        await refreshUser();
+        showNotification('Avatar atualizado com sucesso!', 'success');
+      } catch (err: any) {
+        const errorMessage = err.response?.data?.detail || 'Falha ao atualizar avatar';
+        showNotification(errorMessage, 'error');
+        // Reverter preview em caso de erro
+        setAvatarPreview(user?.avatar || null);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -357,16 +348,6 @@ function ProfilePage() {
                 {user.first_name} {user.last_name}
               </h2>
               <p className={styles.avatarEmail}>{user.email}</p>
-              {avatarFile && (
-                <button
-                  onClick={handleAvatarUpload}
-                  disabled={isLoading}
-                  className={styles.uploadButton}
-                >
-                  <Upload size={16} />
-                  Enviar Avatar
-                </button>
-              )}
             </div>
           </div>
 

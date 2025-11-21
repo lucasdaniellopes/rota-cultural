@@ -47,6 +47,55 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(serializer.data)
 
+    @action(detail=False, methods=['delete'], permission_classes=[IsAuthenticated])
+    def me_delete(self, request):
+        """Delete the current user's account"""
+        user = request.user
+        user.delete()
+        return Response({'detail': 'Account deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def me_change_password(self, request):
+        """Change the current user's password"""
+        user = request.user
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+        new_password_confirm = request.data.get('new_password_confirm')
+
+        # Validar campos obrigatórios
+        if not current_password or not new_password or not new_password_confirm:
+            return Response(
+                {'detail': 'current_password, new_password e new_password_confirm são obrigatórios'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validar senha atual
+        if not user.check_password(current_password):
+            return Response(
+                {'current_password': ['Senha atual está incorreta']},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validar comprimento da nova senha
+        if len(new_password) < 8:
+            return Response(
+                {'new_password': ['A nova senha deve ter no mínimo 8 caracteres']},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validar confirmação da senha
+        if new_password != new_password_confirm:
+            return Response(
+                {'detail': 'As novas senhas não coincidem'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Atualizar senha
+        user.set_password(new_password)
+        user.save()
+
+        return Response({'detail': 'Senha alterada com sucesso'}, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
     def activate(self, request, pk=None):
         user = self.get_object()
@@ -74,21 +123,14 @@ class AuthViewSet(viewsets.GenericViewSet):
         user = serializer.save()
         refresh = RefreshToken.for_user(user)
 
-        user_data = {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'is_tourist': user.is_tourist,
-            'date_joined': user.date_joined
-        }
-
+        # Usar o UserSerializer para retornar dados completos do usuário
+        user_serializer = UserSerializer(user, context={'request': request})
+        
         response_data = {
             'access': str(refresh.access_token),
             'refresh': str(refresh),
             'expires_in': settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds(),
-            'user': user_data
+            'user': user_serializer.data
         }
 
         response_serializer = RegisterResponseSerializer(response_data)

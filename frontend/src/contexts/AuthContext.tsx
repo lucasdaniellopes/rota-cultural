@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       // Registrar novo usuário
-      await api.post('/auth/register/', {
+      const registerResponse = await api.post('/auth/register/', {
         email: data.email,
         password: data.password,
         password_confirm: data.password_confirm,
@@ -123,11 +123,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         last_name: data.last_name || '',
       });
 
-      // Auto-login após registro
-      await login({
-        email: data.email,
-        password: data.password,
-      });
+      // Extrair tokens da resposta do registro
+      const { access, refresh, user: userData } = registerResponse.data;
+
+      // Armazenar tokens
+      localStorage.setItem('access_token', access);
+      localStorage.setItem('refresh_token', refresh);
+
+      // Definir usuário no state com os dados retornados
+      setUser(userData);
     } catch (err: any) {
       const errorData = err.response?.data;
       let errorMessage = 'Falha ao registrar';
@@ -152,7 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [login]);
+  }, []);
 
   const logout = useCallback(async () => {
     setIsLoading(true);
