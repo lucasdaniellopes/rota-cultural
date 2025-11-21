@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/services/api';
 import Navbar from '../components/Navbar';
 import styles from '../styles/ProfilePage.module.css';
 
@@ -33,13 +35,14 @@ interface Notification {
 
 function ProfilePage() {
   const navigate = useNavigate();
+  const { user, refreshUser } = useAuth();
 
   // --- Estados Principais ---
   const [profile, setProfile] = useState<UserProfile>({
-    name: 'João Silva',
-    email: 'joao@example.com',
-    joinDate: '15/01/2024',
-    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent('João Silva')}`,
+    name: user?.first_name || 'Usuário',
+    email: user?.email || '',
+    joinDate: user?.date_joined ? new Date(user.date_joined).toLocaleDateString('pt-BR') : 'Desconhecido',
+    avatar: user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user?.first_name || 'user')}`,
   });
 
   const [activeTab, setActiveTab] = useState<'info' | 'email' | 'password' | 'danger'>('info');
@@ -115,7 +118,7 @@ function ProfilePage() {
     setIsEditingInfo(false);
   };
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     if (!passwordData.current || !passwordData.new || !passwordData.confirm) {
       showNotification('Todos os campos de senha são obrigatórios.', 'error');
       return;
@@ -128,13 +131,22 @@ function ProfilePage() {
       showNotification('A nova senha deve ter no mínimo 6 caracteres.', 'error');
       return;
     }
-    // Lógica de alteração de senha (simulada)
-    console.log('Alterando senha...', passwordData);
-    showNotification('Senha alterada com sucesso!', 'success');
-    setPasswordData({ current: '', new: '', confirm: '' });
+    
+    try {
+      await api.post('/users/me_change_password/', {
+        current_password: passwordData.current,
+        new_password: passwordData.new,
+        new_password_confirm: passwordData.confirm,
+      });
+      showNotification('Senha alterada com sucesso!', 'success');
+      setPasswordData({ current: '', new: '', confirm: '' });
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.detail || 'Falha ao alterar senha';
+      showNotification(errorMessage, 'error');
+    }
   };
 
-  const handleChangeEmail = () => {
+  const handleChangeEmail = async () => {
     if (!emailData.newEmail || !emailData.password) {
       showNotification('Todos os campos de e-mail são obrigatórios.', 'error');
       return;
@@ -143,22 +155,36 @@ function ProfilePage() {
       showNotification('O novo e-mail parece ser inválido.', 'error');
       return;
     }
-    // Lógica de alteração de e-mail (simulada)
-    console.log('Alterando e-mail...', emailData);
-    showNotification('E-mail alterado com sucesso! Verifique sua caixa de entrada.', 'success');
-    setEmailData({ newEmail: '', password: '' });
+    
+    try {
+      await api.patch('/users/me_update/', {
+        email: emailData.newEmail,
+      });
+      await refreshUser();
+      showNotification('E-mail alterado com sucesso!', 'success');
+      setEmailData({ newEmail: '', password: '' });
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.detail || 'Falha ao alterar e-mail';
+      showNotification(errorMessage, 'error');
+    }
   };
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     if (deleteConfirm !== profile.email) {
       showNotification('O e-mail digitado não corresponde ao seu e-mail.', 'error');
       return;
     }
     if (window.confirm('Tem certeza? Esta ação é permanente e não pode ser desfeita.')) {
-      // Lógica de deleção de conta (simulada)
-      console.log('Deletando conta...');
-      alert('Conta deletada com sucesso. Você será redirecionado.');
-      navigate('/entrar');
+      try {
+        await api.delete('/users/me_delete/');
+        showNotification('Conta deletada com sucesso.', 'success');
+        setTimeout(() => {
+          navigate('/entrar');
+        }, 2000);
+      } catch (err: any) {
+        const errorMessage = err.response?.data?.detail || 'Falha ao deletar conta';
+        showNotification(errorMessage, 'error');
+      }
     }
   };
 

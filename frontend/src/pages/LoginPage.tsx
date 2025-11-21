@@ -1,14 +1,33 @@
+import { useState } from 'react';
 import { Mail, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Form from '@/components/Form';
+import { useAuth } from '@/contexts/AuthContext';
 import styles from '@/styles/LoginPage.module.css';
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { login, isLoading, error, clearError } = useAuth();
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formError, setFormError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (error) clearError();
+    if (formError) setFormError('');
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Form submitted');
+    setFormError('');
+
+    try {
+      await login(formData);
+      navigate('/');
+    } catch (err: any) {
+      setFormError(error || 'Falha ao fazer login. Tente novamente.');
+    }
   };
 
   return (
@@ -20,7 +39,7 @@ function LoginPage() {
           <p className={styles['app-description']}>
             Descubra os melhores eventos culturais, pontos turísticos e crie roteiros personalizados na cidade de Patos - PB.
           </p>
-          
+
           <div className={styles['features-list']}>
             <div className={styles['feature-item']}>
               <svg className={styles['feature-icon']} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -43,41 +62,65 @@ function LoginPage() {
         <div className={styles['form-container']}>
           <Form onSubmit={handleSubmit} className={styles['login-form']}>
             <Form.Header>Bem-vindo de volta!</Form.Header>
-            
+
+            {(error || formError) && (
+              <div style={{
+                padding: '12px',
+                backgroundColor: '#fee',
+                borderLeft: '4px solid #f44',
+                borderRadius: '4px',
+                color: '#c33',
+                marginBottom: '16px',
+                fontSize: '14px'
+              }}>
+                {error || formError}
+              </div>
+            )}
+
             <Form.Field>
               <Form.Label htmlFor="email">E-mail</Form.Label>
-              <Form.Input 
-                id="email" 
-                type="email" 
-                placeholder="seu@email.com" 
-                icon={<Mail size={20} />} 
-                required 
+              <Form.Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="seu@email.com"
+                icon={<Mail size={20} />}
+                value={formData.email}
+                onChange={handleChange}
+                disabled={isLoading}
+                required
               />
             </Form.Field>
 
             <Form.Field>
               <Form.Label htmlFor="password">Senha</Form.Label>
-              <Form.Input 
-                id="password" 
-                type="password" 
-                placeholder="••••••••" 
-                icon={<Lock size={20} />} 
-                required 
+              <Form.Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                icon={<Lock size={20} />}
+                value={formData.password}
+                onChange={handleChange}
+                disabled={isLoading}
+                required
               />
             </Form.Field>
 
             <Form.ForgotPassword href="/recuperar-senha">Esqueceu a senha?</Form.ForgotPassword>
 
-            <Form.Button className={styles['submit-button']}>Entrar</Form.Button>
+            <Form.Button disabled={isLoading} className={styles['submit-button']}>
+              {isLoading ? 'Entrando...' : 'Entrar'}
+            </Form.Button>
 
-            <Form.SignUp 
-              prefix="Não tem uma conta?" 
-              linkText="Crie uma" 
-              href="#" 
-              onClick={(e) => { 
-                e.preventDefault(); 
-                navigate('/cadastro'); 
-              }} 
+            <Form.SignUp
+              prefix="Não tem uma conta?"
+              linkText="Crie uma"
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/cadastro');
+              }}
             />
           </Form>
         </div>

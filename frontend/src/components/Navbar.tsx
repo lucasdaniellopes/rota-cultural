@@ -1,15 +1,14 @@
-import { Home, Calendar, Map, MapPin, LogOut, Heart, User } from 'lucide-react';
+import { useState } from 'react';
+import { Home, Calendar, Map, MapPin, LogOut, Heart, User, ChevronDown } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import styles from '../styles/Navbar.module.css';
 
-interface NavbarProps {
-  isAuthenticated?: boolean;
-  onLogout?: () => void;
-}
-
-function Navbar({ isAuthenticated = true, onLogout }: NavbarProps) {
+function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated, user, logout } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const navItems = [
     { id: 'inicio', label: 'Início', icon: Home, href: '/' },
@@ -20,10 +19,8 @@ function Navbar({ isAuthenticated = true, onLogout }: NavbarProps) {
 
   const isActive = (href: string) => location.pathname === href;
 
-  const handleLogout = () => {
-    if (onLogout) {
-      onLogout();
-    }
+  const handleLogout = async () => {
+    await logout();
     navigate('/entrar');
   };
 
@@ -48,16 +45,8 @@ function Navbar({ isAuthenticated = true, onLogout }: NavbarProps) {
           })}
         </div>
 
-        {isAuthenticated && (
+        {isAuthenticated && user ? (
           <div className={styles['action-buttons']}>
-            <button 
-              onClick={() => navigate('/perfil')} 
-              className={`${styles['profile-btn']} ${isActive('/perfil') ? styles.active : ''}`}
-              title="Meu Perfil"
-            >
-              <User size={20} className={styles['profile-icon']} />
-              <span className={styles['profile-label']}>Meu Perfil</span>
-            </button>
             <button 
               onClick={() => navigate('/favoritos')} 
               className={`${styles['favorites-btn']} ${isActive('/favoritos') ? styles.active : ''}`}
@@ -66,9 +55,53 @@ function Navbar({ isAuthenticated = true, onLogout }: NavbarProps) {
               <Heart size={20} className={styles['favorites-icon']} />
               <span className={styles['favorites-label']}>Meus Favoritos</span>
             </button>
-            <button onClick={handleLogout} className={styles['logout-btn']}>
-              <LogOut size={20} className={styles['logout-icon']} />
-              <span className={styles['logout-label']}>Entrar</span>
+
+            <div className={styles['user-menu-container']}>
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className={`${styles['user-menu-btn']} ${isActive('/perfil') ? styles.active : ''}`}
+                title="Opções do usuário"
+              >
+                <User size={20} className={styles['user-icon']} />
+                <span className={styles['user-label']}>
+                  {user.first_name || user.username}
+                </span>
+                <ChevronDown size={16} className={styles['chevron-icon']} />
+              </button>
+
+              {showUserMenu && (
+                <div className={styles['user-dropdown']}>
+                  <button
+                    onClick={() => {
+                      navigate('/perfil');
+                      setShowUserMenu(false);
+                    }}
+                    className={styles['dropdown-item']}
+                  >
+                    <User size={18} />
+                    <span>Meu Perfil</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setShowUserMenu(false);
+                    }}
+                    className={styles['dropdown-item logout']}
+                  >
+                    <LogOut size={18} />
+                    <span>Sair</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className={styles['action-buttons']}>
+            <button
+              onClick={() => navigate('/entrar')}
+              className={styles['login-btn']}
+            >
+              Entrar
             </button>
           </div>
         )}
