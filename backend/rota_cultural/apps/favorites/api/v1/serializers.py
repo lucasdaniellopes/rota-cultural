@@ -6,7 +6,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Favorite
-        fields = ['id', 'user', 'favoritable_type', 'object_id', 'created_at']
+        fields = ['id', 'user', 'content_type', 'favoritable_type', 'object_id', 'created_at']
         read_only_fields = ['id', 'user', 'created_at']
 
     def get_favoritable_type(self, obj):

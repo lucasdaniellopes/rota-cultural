@@ -1,14 +1,18 @@
 // Nominatim API service for geocoding and reverse geocoding
 // Based on OpenStreetMap data
 
+import type { Location } from './api';
+
 export interface NominatimAddress {
   house_number?: string;
   road?: string;
   suburb?: string;
   city?: string;
   town?: string;
+  municipality?: string;
   county?: string;
   state?: string;
+  state_district?: string;
   postcode?: string;
   country?: string;
   country_code?: string;
@@ -129,7 +133,7 @@ class NominatimService {
     return this.search(searchQuery, limit);
   }
 
-  async searchTouristPlaces(query: string, city?: string): Promise<NominatimResult[]> {
+  async searchTouristPlaces(query: string): Promise<NominatimResult[]> {
     const targetCity = 'Patos, Paraíba';
     let searchQuery = query;
 
@@ -185,7 +189,7 @@ class NominatimService {
   /**
    * Convert Nominatim result to Location format (for compatibility with existing API)
    */
-  static toLocation(result: NominatimResult): Omit<Location, 'id' | 'description'> {
+  static toLocation(result: NominatimResult): Pick<Location, 'name' | 'latitude' | 'longitude'> {
     return {
       name: result.display_name.split(',')[0].trim(),
       latitude: parseFloat(result.lat),

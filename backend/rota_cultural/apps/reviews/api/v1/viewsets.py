@@ -1,18 +1,18 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from django.contrib.contenttypes.models import ContentType
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db.models import Avg
 
-from rota_cultural.apps.reviews.models import Review
+from rota_cultural.apps.reviews.models import Review, ReviewVote
 from .serializers import ReviewSerializer, ReviewListSerializer
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['content_type', 'rating']
     search_fields = ['comment', 'user__username']
@@ -78,8 +78,25 @@ class ReviewViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-    @action(detail=False, methods=['get'], url_path='my-reviews')
+    @action(detail=False, methods=['get'], url_path='my-reviews', permission_classes=[IsAuthenticated])
     def my_reviews(self, request):
         reviews = Review.objects.filter(user=request.user)
         serializer = ReviewListSerializer(reviews, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def mark_helpful(self, request, pk=None):
+        review = self.get_object()
+        user = request.user
+
+        try:
+            vote = ReviewVote.objects.get(user=user, review=review)
+            vote.delete()
+            review.helpful_count = max(0, review.helpful_count - 1)
+            review.save()
+            return Response({'status': 'unmarked', 'helpful_count': review.helpful_count})
+        except ReviewVote.DoesNotExist:
+            ReviewVote.objects.create(user=user, review=review)
+            review.helpful_count += 1
+            review.save()
+            return Response({'status': 'marked', 'helpful_count': review.helpful_count})

@@ -117,13 +117,16 @@ class EventListSerializer(serializers.ModelSerializer):
     location_name = serializers.SerializerMethodField()
     is_free = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
+    latitude = serializers.SerializerMethodField()
+    longitude = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
         fields = [
             'id', 'name', 'start_date', 'end_date',
             'start_time', 'end_time', 'price', 'is_free',
-            'category_name', 'location_name', 'image_url'
+            'category_name', 'location_name', 'image_url',
+            'latitude', 'longitude'
         ]
 
     def get_category_name(self, obj):
@@ -140,4 +143,20 @@ class EventListSerializer(serializers.ModelSerializer):
             request = self.context.get('request')
             if request:
                 return request.build_absolute_uri(obj.image.url)
+        return None
+
+    def get_latitude(self, obj):
+        if obj.location:
+            if hasattr(obj.location, 'latitude'):
+                return float(obj.location.latitude)
+            if hasattr(obj.location, 'address') and obj.location.address and obj.location.address.point:
+                return obj.location.address.point.y
+        return None
+
+    def get_longitude(self, obj):
+        if obj.location:
+            if hasattr(obj.location, 'longitude'):
+                return float(obj.location.longitude)
+            if hasattr(obj.location, 'address') and obj.location.address and obj.location.address.point:
+                return obj.location.address.point.x
         return None

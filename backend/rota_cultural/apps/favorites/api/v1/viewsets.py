@@ -56,3 +56,16 @@ class FavoriteViewSet(viewsets.ModelViewSet):
                 {'error': 'Content type not found'},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+class ContentTypeViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request):
+        model = request.query_params.get('model')
+        if model:
+            try:
+                ct = ContentType.objects.get(model=model)
+                return Response([{'id': ct.id, 'app_label': ct.app_label, 'model': ct.model}])
+            except ContentType.DoesNotExist:
+                return Response([], status=status.HTTP_404_NOT_FOUND)
+        return Response([], status=status.HTTP_400_BAD_REQUEST)

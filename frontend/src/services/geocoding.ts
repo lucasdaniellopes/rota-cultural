@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { Location } from './api';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL
@@ -23,6 +24,7 @@ export interface NominatimResult {
   place_id: string;
   osm_type: string;
   osm_id: string;
+  name?: string;
   display_name: string;
   address: NominatimAddress;
   lat: string;
@@ -31,7 +33,6 @@ export interface NominatimResult {
   bbox?: [string, string, string, string];
   class?: string;
   type?: string;
-  name?: string;
   extratags?: Record<string, any>;
   namedetails?: Record<string, any>;
   boundingbox?: [string, string, string, string];
@@ -108,7 +109,7 @@ class GeocodingService {
     return parts.join(', ') || result.display_name;
   }
 
-  static toLocation(result: NominatimResult): Omit<Location, 'id' | 'description'> {
+  static toLocation(result: NominatimResult): Pick<Location, 'name' | 'latitude' | 'longitude'> {
     return {
       name: result.name || result.display_name.split(',')[0].trim(),
       latitude: parseFloat(result.lat),

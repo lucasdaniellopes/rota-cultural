@@ -8,6 +8,7 @@ from .serializers import NominatimResultSerializer, ReverseGeocodeResultSerializ
 
 class GeocodingViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     @action(detail=False, methods=['get'], url_path='search')
     def search(self, request):
@@ -45,6 +46,7 @@ class GeocodingViewSet(viewsets.ViewSet):
             serializer.is_valid(raise_exception=True)
             return Response(serializer.data)
         except Exception as e:
+            print(f"Geocoding error: {e}")
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['get'], url_path='tourist-search')

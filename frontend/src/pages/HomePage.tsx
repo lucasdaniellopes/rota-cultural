@@ -1,225 +1,411 @@
+import styled from 'styled-components';
 import { Calendar, MapPin, Clock, Eye, Landmark } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Card from '../components/Card';
-import styles from '../styles/HomePage.module.css';
+import { eventsService } from '../services/events';
+import { placesService, type TouristSpotListItem } from '../services/places';
+
+// --- Styled Components ---
+
+// Container Geral
+const PageWrapper = styled.div`
+  font-family: 'Inter', sans-serif;
+`;
+
+const ErrorMessage = styled.div`
+  padding: 1rem;
+  background-color: #fff3cd;
+  color: #856404;
+  text-align: center;
+  margin-bottom: 1rem;
+`;
+
+// --- Hero & CTA Sections (Dark Theme) ---
+const DarkSection = styled.section`
+  width: 100%;
+  background: #212121;
+  padding: 3rem 1.5rem;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    padding: 2rem 1rem;
+  }
+  @media (max-width: 480px) {
+    padding: 1.5rem 0.75rem;
+  }
+`;
+
+const HeroContainer = styled.div`
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const HeroTitle = styled.h1`
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.2;
+
+  @media (max-width: 768px) { font-size: 1.75rem; }
+  @media (max-width: 480px) { font-size: 1.5rem; }
+`;
+
+const HeroSubtitle = styled.p`
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  line-height: 1.5;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+
+  @media (max-width: 768px) { font-size: 0.95rem; }
+  @media (max-width: 480px) { font-size: 0.9rem; }
+`;
+
+const ActionButtons = styled.div`
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+`;
+
+// Botões
+const ButtonBase = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.9rem;
+  }
+  @media (max-width: 480px) {
+    width: 100%;
+    padding: 0.75rem 1rem;
+  }
+`;
+
+const ButtonPrimary = styled(ButtonBase)`
+  background-color: #ffffff;
+  color: #212121;
+  border: none;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+`;
+
+const ButtonSecondary = styled(ButtonBase)`
+  background-color: transparent;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+`;
+
+// --- Content Sections (Light Theme) ---
+const LightSection = styled.section<{ $variant?: 'gray' }>`
+  width: 100%;
+  background-color: ${props => props.$variant === 'gray' ? '#f8f8f8' : '#ffffff'};
+  padding: 3rem 1.5rem;
+`;
+
+const SectionContainer = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+`;
+
+const SectionHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const TitleWithIcon = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #0052cc; // Azul original do CSS
+  
+  svg {
+    width: 28px;
+    height: 28px;
+  }
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+`;
+
+const SectionSubtitle = styled.p`
+  font-size: 0.95rem;
+  color: #666666;
+  margin: 0;
+`;
+
+// Grid de Cards
+const CardsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
+
+const LoadingMessage = styled.p`
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+`;
+
+// --- Component Logic ---
 
 function HomePage() {
   const navigate = useNavigate();
-  const [favorited, setFavorited] = useState<{ [key: string]: boolean }>({});
+  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
+  const [touristPlaces, setTouristPlaces] = useState<TouristSpotListItem[]>([]);
+  const [isLoadingEvents, setIsLoadingEvents] = useState(true);
+  const [isLoadingPlaces, setIsLoadingPlaces] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const upcomingEvents = [
-    {
-      id: 'motofest',
-      title: 'MotoFest',
-      image: '/MotoFest.png',
-      description: 'Festival de motociclismo que combina música, gastronomia e camaradagem entre motociclistas e público em geral',
-      date: '30/08/2025',
-      time: '18:00 - 23:00',
-      location: 'Patos - PB',
-      price: 'Gratuito',
-    },
-    {
-      id: 'terreirinho',
-      title: 'Terreirinho',
-      image: '/Terreirinho.png',
-      description: 'Espaço ecológico e cultural que oferece atividades em um verde e apresentações culturais de artistas locais',
-      date: '15/09/2025',
-      time: '18:00 - 23:00',
-      location: 'Patos - PB',
-      price: 'R$ 25,00',
-    },
-    {
-      id: 'sao-joao',
-      title: 'São João de Patos',
-      image: '/SãoJoão.png',
-      description: 'Uma grande festa junina com estrutura de shows no Terreno do Patos. Festa bem recebida socialmente entre maiores e menores dias',
-      date: '23/06/2025',
-      time: '18:00 - 23:00',
-      location: 'Patos - PB',
-      price: 'R$ 30,00',
-    },
-  ];
+  // Carregar eventos ao montar o componente
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        setIsLoadingEvents(true);
+        const events = await eventsService.getFeaturedEvents();
+        // Formatar datas para exibição
+        const formattedEvents = events.map(event => ({
+          ...event,
+          id: event.id.toString(),
+          title: event.name,
+          image: event.image_url || '/default-event.png',
+          date: new Date(event.start_date).toLocaleDateString('pt-BR'),
+          time: `${event.start_time} - ${event.end_time}`,
+          location: event.location_name || 'Patos - PB',
+          price: event.is_free ? 'Gratuito' : `R$ ${event.price}`,
+        }));
+        setUpcomingEvents(formattedEvents);
+      } catch (err) {
+        console.error('Erro ao carregar eventos:', err);
+        setError('Erro ao carregar eventos');
+        setUpcomingEvents([]);
+      } finally {
+        setIsLoadingEvents(false);
+      }
+    };
 
-  const touristPlaces = [
-    {
-      id: 'cruz-de-merina',
-      title: 'Cruz de Merina',
-      image: '/CruzdaMenina.png',
-      description: 'A Igreja estrutura e a construção de 8 de Joséde Patos é uma estrutura bem conservada, localizada em Patos, Paraíba com grande importância histórica',
-      location: 'Patos - PB',
-    },
-    {
-      id: 'igreja-nossa-senhora',
-      title: 'Igreja Nossa Senhora da Conceição',
-      image: '/IgrejaConceicao.png',
-      description: 'A Igreja de Nossa Senhora da Conceição, localizada no centro de Patos, é um importante ponto religioso e turístico da cidade com sua arquitetura característica',
-      location: 'Patos - PB',
-    },
-    {
-      id: 'patos-shopping',
-      title: 'Patos Shopping',
-      image: '/PatosShopping.png',
-      description: 'É um centro comercial localizado na cidade de Patos, oferecendo compras, lazer e entretenimento para toda família',
-      location: 'Patos - PB',
-    },
-  ];
+    loadEvents();
+  }, []);
 
-  const toggleFavorite = (id: string) => {
-    setFavorited(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  };
+  // Carregar pontos turísticos ao montar o componente
+  useEffect(() => {
+    const loadPlaces = async () => {
+      try {
+        setIsLoadingPlaces(true);
+        const places = await placesService.getFeaturedTouristSpots();
+        setTouristPlaces(places);
+      } catch (err) {
+        console.error('Erro ao carregar pontos turísticos:', err);
+        setError('Erro ao carregar pontos turísticos');
+        setTouristPlaces([]);
+      } finally {
+        setIsLoadingPlaces(false);
+      }
+    };
+
+    loadPlaces();
+  }, []);
 
   return (
-    <div>
-      <Navbar isAuthenticated={true} />
+    <PageWrapper>
+      <Navbar />
       
-      <section className={styles['hero-section']}>
-        <div className={styles['hero-container']}>
-          <h1 className={styles['hero-title']}>Descubro os Melhores Destinos e Eventos</h1>
-          <p className={styles['hero-subtitle']}>Explore pontos turísticos, eventos culturais e descubra os melhores lugares para visitar</p>
+      {error && (
+        <ErrorMessage>{error}</ErrorMessage>
+      )}
+      
+      {/* Hero Section */}
+      <DarkSection>
+        <HeroContainer>
+          <HeroTitle>Descubro os Melhores Destinos e Eventos</HeroTitle>
+          <HeroSubtitle>Explore pontos turísticos, eventos culturais e descubra os melhores lugares para visitar</HeroSubtitle>
           
-          <div className={styles['hero-actions']}>
-            <button 
-              className={styles['hero-btn-primary']}
-              onClick={() => navigate('/eventos')}
-            >
+          <ActionButtons>
+            <ButtonPrimary onClick={() => navigate('/eventos')}>
               <Calendar size={18} />
               Ver Eventos
-            </button>
-            <button 
-              className={styles['hero-btn-secondary']}
-              onClick={() => navigate('/pontos-turisticos')}
-            >
+            </ButtonPrimary>
+            <ButtonSecondary onClick={() => navigate('/pontos-turisticos')}>
               <MapPin size={18} />
               Pontos Turísticos
-            </button>
-          </div>
-        </div>
-      </section>
+            </ButtonSecondary>
+          </ActionButtons>
+        </HeroContainer>
+      </DarkSection>
 
-      <section className={styles['events-section']}>
-        <div className={styles['section-container']}>
-          <div className={styles['section-header']}>
-            <div className={styles['title-with-icon']}>
-              <Calendar size={28} />
-              <h2 className={styles['section-title']}>Próximos Eventos</h2>
-            </div>
-            <p className={styles['section-subtitle']}>Os eventos mais populares da cidade</p>
-          </div>
+      {/* Events Section */}
+      <LightSection>
+        <SectionContainer>
+          <SectionHeader>
+            <TitleWithIcon>
+              <Calendar />
+              <SectionTitle>Próximos Eventos</SectionTitle>
+            </TitleWithIcon>
+            <SectionSubtitle>Os eventos mais populares da cidade</SectionSubtitle>
+          </SectionHeader>
           
-                    <div className={styles['cards-grid']}>
-            {upcomingEvents.map(event => (
-              <Card 
-                key={event.id}
-                image={event.image}
-                onClick={() => navigate(`/eventos/${event.id}`)}
-              >
-                <Card.TitleWithFav 
-                  onFavorite={() => toggleFavorite(event.id)}
-                  isFavorited={favorited[event.id] || false}
+          <CardsGrid>
+            {isLoadingEvents ? (
+              <LoadingMessage>Carregando eventos...</LoadingMessage>
+            ) : upcomingEvents.length > 0 ? (
+              upcomingEvents.map(event => (
+                <Card 
+                  key={event.id}
+                  image={event.image}
+                  onClick={() => navigate(`/eventos/${event.id}`)}
                 >
-                  {event.title}
-                </Card.TitleWithFav>
-                
-                <Card.Description>
-                  {event.description}
-                </Card.Description>
-                
-                <Card.Meta>
-                  <Card.MetaItem icon={<Calendar size={14} />}>
-                    {event.date}
-                  </Card.MetaItem>
-                  <Card.MetaItem icon={<Clock size={14} />}>
-                    {event.time}
-                  </Card.MetaItem>
-                  <Card.MetaItem icon={<MapPin size={14} />}>
-                    {event.location}
-                  </Card.MetaItem>
-                  <Card.MetaItem>
-                    {event.price}
-                  </Card.MetaItem>
-                </Card.Meta>
-                
-                <Card.Action onClick={() => navigate(`/eventos/${event.id}`)}>
-                  Como Chegar
-                </Card.Action>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+                  <Card.Title>
+                    {event.title}
+                  </Card.Title>
+                  
+                  <Card.Description>
+                    {event.description}
+                  </Card.Description>
+                  
+                  <Card.Meta>
+                    <Card.MetaItem icon={<Calendar size={14} />}>
+                      {event.date}
+                    </Card.MetaItem>
+                    <Card.MetaItem icon={<Clock size={14} />}>
+                      {event.time}
+                    </Card.MetaItem>
+                    <Card.MetaItem icon={<MapPin size={14} />}>
+                      {event.location}
+                    </Card.MetaItem>
+                    <Card.MetaItem>
+                      {event.price}
+                    </Card.MetaItem>
+                  </Card.Meta>
+                  
+                  <Card.Action onClick={() => navigate(`/eventos/${event.id}`)}>
+                    Como Chegar
+                  </Card.Action>
+                </Card>
+              ))
+            ) : (
+              <LoadingMessage>Nenhum evento encontrado</LoadingMessage>
+            )}
+          </CardsGrid>
+        </SectionContainer>
+      </LightSection>
 
-      <section className={styles['tourist-section']}>
-        <div className={styles['section-container']}>
-          <div className={styles['section-header']}>
-            <div className={styles['title-with-icon']}>
-              <Landmark size={28} />
-              <h2 className={styles['section-title']}>Pontos Turísticos em Destaque</h2>
-            </div>
-            <p className={styles['section-subtitle']}>Os lugares mais visitados e bem avaliados</p>
-          </div>
+      {/* Tourist Section */}
+      <LightSection $variant="gray">
+        <SectionContainer>
+          <SectionHeader>
+            <TitleWithIcon>
+              <Landmark />
+              <SectionTitle>Pontos Turísticos em Destaque</SectionTitle>
+            </TitleWithIcon>
+            <SectionSubtitle>Os lugares mais visitados e bem avaliados</SectionSubtitle>
+          </SectionHeader>
           
-          <div className={styles['cards-grid']}>
-            {touristPlaces.map(place => (
-              <Card 
-                key={place.id}
-                image={place.image}
-                onClick={() => navigate(`/pontos-turisticos/${place.id}`)}
-              >
-                <Card.TitleWithFav 
-                  onFavorite={() => toggleFavorite(place.id)}
-                  isFavorited={favorited[place.id] || false}
+          <CardsGrid>
+            {isLoadingPlaces ? (
+              <LoadingMessage>Carregando pontos turísticos...</LoadingMessage>
+            ) : touristPlaces.length > 0 ? (
+              touristPlaces.map(place => (
+                <Card 
+                  key={place.id}
+                  image={place.image_url || '/default-place.png'}
+                  onClick={() => navigate(`/pontos-turisticos/${place.id}`)}
                 >
-                  {place.title}
-                </Card.TitleWithFav>
-                
-                <Card.Description>
-                  {place.description}
-                </Card.Description>
-                
-                <Card.Meta>
-                  <Card.MetaItem icon={<MapPin size={14} />}>
-                    {place.location}
-                  </Card.MetaItem>
-                </Card.Meta>
-                
-                <Card.Action onClick={() => navigate(`/pontos-turisticos/${place.id}`)}>
-                  Como Chegar
-                </Card.Action>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+                  <Card.Title>
+                    {place.name}
+                  </Card.Title>
+                  
+                  <Card.Description>
+                    {place.description}
+                  </Card.Description>
+                  
+                  <Card.Meta>
+                    <Card.MetaItem icon={<MapPin size={14} />}>
+                      {place.location || 'Patos - PB'}
+                    </Card.MetaItem>
+                  </Card.Meta>
+                  
+                  <Card.Action onClick={() => navigate(`/pontos-turisticos/${place.id}`)}>
+                    Como Chegar
+                  </Card.Action>
+                </Card>
+              ))
+            ) : (
+              <LoadingMessage>Nenhum ponto turístico encontrado</LoadingMessage>
+            )}
+          </CardsGrid>
+        </SectionContainer>
+      </LightSection>
 
-      <section className={styles['cta-section']}>
-        <div className={styles['cta-container']}>
-          <h2 className={styles['cta-title']}>Planeje Sua Visita Perfeita</h2>
-          <p className={styles['cta-subtitle']}>Descubra eventos próximos, encontre os melhores lugares para visitar e planeje sua viagem perfeita</p>
+      {/* CTA Section */}
+      <DarkSection>
+        <HeroContainer>
+          <HeroTitle>Planeje Sua Visita Perfeita</HeroTitle>
+          <HeroSubtitle>Descubra eventos próximos, encontre os melhores lugares para visitar e planeje sua viagem perfeita</HeroSubtitle>
           
-          <div className={styles['cta-actions']}>
-            <button 
-              className={styles['cta-btn-primary']}
-              onClick={() => navigate('/eventos')}
-            >
+          <ActionButtons>
+            <ButtonPrimary onClick={() => navigate('/eventos')}>
               <Calendar size={18} />
               Descubra Eventos
-            </button>
-            <button 
-              className={styles['cta-btn-secondary']}
-              onClick={() => navigate('/')}
-            >
+            </ButtonPrimary>
+            <ButtonSecondary onClick={() => navigate('/avaliacoes')}>
               <Eye size={18} />
               Avaliar o Site
-            </button>
-          </div>
-        </div>
-      </section>
-    </div>
+            </ButtonSecondary>
+          </ActionButtons>
+        </HeroContainer>
+      </DarkSection>
+    </PageWrapper>
   );
 }
 

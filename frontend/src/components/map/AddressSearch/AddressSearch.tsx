@@ -1,8 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
-import { Search, MapPin, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { geocodingService, type NominatimResult } from '@/services/geocoding';
-import { Button } from '@/components/ui/Button';
-import { Select } from '@/components/ui/Select';
 import styles from './AddressSearch.module.css';
 
 export interface AddressSearchProps {
@@ -25,7 +23,7 @@ export default function AddressSearch({
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const searchLocations = useCallback(async (searchQuery: string) => {
@@ -171,7 +169,6 @@ export default function AddressSearch({
     <div className={`${styles['address-search-container']} ${className}`}>
       <div className={styles['search-input-wrapper']}>
         <div className={styles['search-input-container']}>
-          <Search size={18} className={styles['search-icon']} />
           <input
             ref={inputRef}
             type="text"

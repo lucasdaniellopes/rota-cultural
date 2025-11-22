@@ -12,9 +12,10 @@ export interface RouteData {
 }
 
 export const routingService ={
-    calculateRoute: async (data: { waypointIds: number[] }): Promise<RouteData> => {
+    calculateRoute: async (data: { waypointIds?: number[], coordinates?: Array<{lat: number, lon: number}> }): Promise<RouteData> => {
         const response = await api.post('/routes/calculate/', {
-            waypoint_ids: data.waypointIds
+            waypoint_ids: data.waypointIds,
+            coordinates: data.coordinates
         });
         return response.data;
     }

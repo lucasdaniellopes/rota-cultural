@@ -1,655 +1,595 @@
+import styled, { css, keyframes } from 'styled-components';
 import {
-  Mail,
   Lock,
   Trash2,
-  Eye,
-  EyeOff,
   Camera,
-  Edit,
   Save,
+  User,
+  Shield,
   XCircle,
-  AlertTriangle,
   CheckCircle,
+  AlertTriangle,
 } from 'lucide-react';
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/services/api';
 import Navbar from '../components/Navbar';
-import styles from '../styles/ProfilePage.module.css';
 
-type NotificationType = 'success' | 'error' | 'info';
+// --- Light Theme Constants ---
+const theme = {
+  colors: {
+    bg: '#ffffff',         // Fundo branco da página
+    surface: '#f9fafb',    // Fundo leve dos cartões
+    surfaceHover: '#f3f4f6',
+    primary: '#3b82f6',    // Azul
+    primaryHover: '#2563eb',
+    danger: '#ef4444',
+    text: {
+      primary: '#1f2937',  // Preto/cinza escuro
+      secondary: '#6b7280', // Cinza médio
+      muted: '#9ca3af',     // Cinza claro
+    },
+    border: '#e5e7eb',     // Bordas cinzas claras
+    inputBg: '#ffffff',    // Fundo branco dos inputs
+  },
+  radius: '8px',
+};
 
-interface Notification {
-  message: string;
-  type: NotificationType;
-}
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
+// --- Styled Components ---
+
+const Wrapper = styled.div`
+  min-height: 100vh;
+  background-color: ${theme.colors.bg};
+  font-family: 'Inter', sans-serif;
+  color: ${theme.colors.text.primary};
+`;
+
+const Container = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  animation: ${fadeIn} 0.4s ease-out;
+`;
+
+// Cabeçalho do Perfil (Fixo)
+const ProfileHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid ${theme.colors.border};
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    text-align: center;
+  }
+`;
+
+const AvatarWrapper = styled.div`
+  position: relative;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid ${theme.colors.surface};
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+`;
+
+const AvatarUploadButton = styled.label`
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: ${theme.colors.primary};
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+  border: 2px solid ${theme.colors.bg};
+  color: white;
+
+  &:hover {
+    transform: scale(1.1);
+    background-color: ${theme.colors.primaryHover};
+  }
+`;
+
+const UserInfo = styled.div`
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: ${theme.colors.text.primary};
+    margin: 0;
+  }
+  p {
+    color: ${theme.colors.text.secondary};
+    margin-top: 0.25rem;
+  }
+`;
+
+// Sistema de Abas (Limpeza visual)
+const TabsContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  padding-bottom: 5px;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: ${theme.colors.border};
+    border-radius: 4px;
+  }
+`;
+
+const Tab = styled.button<{ $active: boolean }>`
+  background: ${props => props.$active ? theme.colors.surface : 'transparent'};
+  color: ${props => props.$active ? theme.colors.primary : theme.colors.text.secondary};
+  border: 1px solid ${props => props.$active ? theme.colors.border : 'transparent'};
+  padding: 0.75rem 1.25rem;
+  border-radius: 2rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+
+  &:hover {
+    color: ${props => props.$active ? theme.colors.primary : theme.colors.text.primary};
+    background: ${props => !props.$active && theme.colors.surfaceHover};
+  }
+`;
+
+// Área de Conteúdo (Cartão Dark)
+const ContentCard = styled.div`
+  background-color: ${theme.colors.surface};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radius};
+  padding: 2rem;
+  animation: ${fadeIn} 0.3s ease-in-out;
+
+  @media (max-width: 600px) {
+    padding: 1.5rem;
+  }
+`;
+
+const CardTitle = styled.h2`
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: ${theme.colors.text.primary};
+`;
+
+const CardDescription = styled.p`
+  color: ${theme.colors.text.secondary};
+  font-size: 0.9rem;
+  margin-bottom: 2rem;
+`;
+
+// Elementos de Formulário Dark
+const FormGroup = styled.div`
+  margin-bottom: 1.5rem;
+
+  label {
+    display: block;
+    color: ${theme.colors.text.secondary};
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+`;
+
+const Input = styled.input`
+  width: 100%;
+  background-color: ${theme.colors.inputBg};
+  border: 1px solid ${theme.colors.border};
+  color: ${theme.colors.text.primary};
+  padding: 0.875rem 1rem;
+  border-radius: ${theme.radius};
+  font-size: 0.95rem;
+  transition: all 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: ${theme.colors.primary};
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const Button = styled.button<{ $variant?: 'primary' | 'danger' | 'outline' }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  border-radius: ${theme.radius};
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  width: 100%;
+
+  @media (min-width: 600px) {
+    width: auto;
+  }
+
+  ${props => {
+    switch (props.$variant) {
+      case 'danger':
+        return css`
+          background-color: rgba(239, 68, 68, 0.1);
+          color: ${theme.colors.danger};
+          border: 1px solid ${theme.colors.danger};
+          &:hover { background-color: rgba(239, 68, 68, 0.2); }
+        `;
+      case 'outline':
+        return css`
+          background-color: transparent;
+          color: ${theme.colors.text.primary};
+          border: 1px solid ${theme.colors.border};
+          &:hover { background-color: ${theme.colors.surfaceHover}; }
+        `;
+      default: // primary
+        return css`
+          background-color: ${theme.colors.primary};
+          color: white;
+          &:hover { background-color: ${theme.colors.primaryHover}; }
+        `;
+    }
+  }}
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+// Notificação Flutuante
+const Notification = styled.div<{ $type: 'success' | 'error' }>`
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #ffffff;
+  border-left: 4px solid ${props => props.$type === 'success' ? theme.colors.primary : theme.colors.danger};
+  color: ${theme.colors.text.primary};
+  padding: 1rem 1.5rem;
+  border-radius: 4px;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 1000;
+  animation: ${fadeIn} 0.3s;
+
+  svg {
+    color: ${props => props.$type === 'success' ? theme.colors.primary : theme.colors.danger};
+  }
+`;
+
+// --- Component Logic ---
 
 function ProfilePage() {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
-
-  // --- Estados Principais ---
-  const [activeTab, setActiveTab] = useState<'info' | 'email' | 'password' | 'danger'>('info');
-  const [notification, setNotification] = useState<Notification | null>(null);
+  const [activeTab, setActiveTab] = useState<'general' | 'security' | 'danger'>('general');
   const [isLoading, setIsLoading] = useState(false);
+  const [feedback, setFeedback] = useState<{ msg: string, type: 'success' | 'error' } | null>(null);
 
-  // --- Estados dos Formulários ---
-  const [isEditingInfo, setIsEditingInfo] = useState(false);
-  const [editInfoData, setEditInfoData] = useState({
-    first_name: user?.first_name || '',
-    last_name: user?.last_name || '',
+  // States for forms
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
   });
-  const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' });
-  const [emailData, setEmailData] = useState({ newEmail: '' });
-  const [deleteConfirm, setDeleteConfirm] = useState('');
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar || null);
+  const [passData, setPassData] = useState({
+    current: '',
+    new: '',
+    confirm: ''
+  });
+  const [deleteEmail, setDeleteEmail] = useState('');
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
-  // --- Estados de visibilidade de senha ---
-  const [showPassword, setShowPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // Atualizar dados do formulário quando o usuário mudar
   useEffect(() => {
     if (user) {
-      setEditInfoData({
+      setFormData({
         first_name: user.first_name || '',
         last_name: user.last_name || '',
+        email: user.email || '',
       });
       setAvatarPreview(user.avatar || null);
-      setEmailData({ newEmail: user.email || '' });
     }
   }, [user]);
 
-  // --- Funções Auxiliares ---
-
-  const showNotification = (message: string, type: NotificationType = 'info', duration: number = 3000) => {
-    setNotification({ message, type });
-    setTimeout(() => {
-      setNotification(null);
-    }, duration);
+  const showFeedback = (msg: string, type: 'success' | 'error') => {
+    setFeedback({ msg, type });
+    setTimeout(() => setFeedback(null), 3000);
   };
 
-  // --- Manipuladores de Avatar ---
-
+  // Handlers
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Validar tipo de arquivo
-      if (!file.type.startsWith('image/')) {
-        showNotification('Por favor, selecione uma imagem válida', 'error');
-        return;
-      }
+    if (!file) return;
 
-      // Validar tamanho (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        showNotification('A imagem deve ter no máximo 5MB', 'error');
-        return;
-      }
+    setAvatarPreview(URL.createObjectURL(file));
+    setIsLoading(true);
 
-      // Mostrar preview imediatamente
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setAvatarPreview(event.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-
-      // Fazer upload automático
-      setIsLoading(true);
-      try {
-        const formData = new FormData();
-        formData.append('avatar_upload', file);
-
-        await api.patch('/users/me_update/', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-
-        await refreshUser();
-        showNotification('Avatar atualizado com sucesso!', 'success');
-      } catch (err: any) {
-        const errorMessage = err.response?.data?.detail || 'Falha ao atualizar avatar';
-        showNotification(errorMessage, 'error');
-        // Reverter preview em caso de erro
-        setAvatarPreview(user?.avatar || null);
-      } finally {
-        setIsLoading(false);
-      }
+    try {
+      const data = new FormData();
+      data.append('avatar_upload', file);
+      await api.patch('/users/me_update/', data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      await refreshUser();
+      showFeedback('Foto de perfil atualizada!', 'success');
+    } catch (error) {
+      showFeedback('Erro ao atualizar foto.', 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // --- Manipuladores de Informações ---
-
-  const handleInfoSave = async (e: FormEvent) => {
+  const handleUpdateProfile = async (e: FormEvent) => {
     e.preventDefault();
-
-    if (!editInfoData.first_name.trim()) {
-      showNotification('Nome é obrigatório', 'error');
-      return;
-    }
-
     setIsLoading(true);
     try {
       await api.patch('/users/me_update/', {
-        first_name: editInfoData.first_name,
-        last_name: editInfoData.last_name,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email !== user?.email ? formData.email : undefined
       });
-
       await refreshUser();
-      setIsEditingInfo(false);
-      showNotification('Perfil atualizado com sucesso!', 'success');
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.detail || 'Falha ao atualizar perfil';
-      showNotification(errorMessage, 'error');
+      showFeedback('Perfil atualizado com sucesso.', 'success');
+    } catch (error) {
+      showFeedback('Erro ao atualizar perfil.', 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleInfoCancel = () => {
-    if (user) {
-      setEditInfoData({
-        first_name: user.first_name || '',
-        last_name: user.last_name || '',
-      });
+  const handleUpdatePassword = async (e: FormEvent) => {
+    e.preventDefault();
+    if (passData.new !== passData.confirm) {
+      return showFeedback('As novas senhas não coincidem.', 'error');
     }
-    setIsEditingInfo(false);
-  };
-
-  // --- Manipuladores de Email ---
-
-  const handleChangeEmail = async () => {
-    if (!emailData.newEmail) {
-      showNotification('E-mail é obrigatório', 'error');
-      return;
-    }
-
-    if (!emailData.newEmail.includes('@')) {
-      showNotification('E-mail inválido', 'error');
-      return;
-    }
-
-    if (emailData.newEmail === user?.email) {
-      showNotification('O novo e-mail deve ser diferente do atual', 'error');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      await api.patch('/users/me_update/', {
-        email: emailData.newEmail,
-      });
-
-      await refreshUser();
-      showNotification('E-mail alterado com sucesso!', 'success');
-      setEmailData({ newEmail: user?.email || '' });
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.email?.[0] || err.response?.data?.detail || 'Falha ao alterar e-mail';
-      showNotification(errorMessage, 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // --- Manipuladores de Senha ---
-
-  const handleChangePassword = async () => {
-    if (!passwordData.current || !passwordData.new || !passwordData.confirm) {
-      showNotification('Todos os campos de senha são obrigatórios', 'error');
-      return;
-    }
-
-    if (passwordData.new !== passwordData.confirm) {
-      showNotification('As novas senhas não coincidem', 'error');
-      return;
-    }
-
-    if (passwordData.new.length < 8) {
-      showNotification('A nova senha deve ter no mínimo 8 caracteres', 'error');
-      return;
-    }
-
+    
     setIsLoading(true);
     try {
       await api.post('/users/me_change_password/', {
-        current_password: passwordData.current,
-        new_password: passwordData.new,
-        new_password_confirm: passwordData.confirm,
+        current_password: passData.current,
+        new_password: passData.new,
+        new_password_confirm: passData.confirm
       });
-
-      showNotification('Senha alterada com sucesso!', 'success');
-      setPasswordData({ current: '', new: '', confirm: '' });
-    } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.detail ||
-        err.response?.data?.current_password?.[0] ||
-        'Falha ao alterar senha';
-      showNotification(errorMessage, 'error');
+      setPassData({ current: '', new: '', confirm: '' });
+      showFeedback('Senha alterada com sucesso.', 'success');
+    } catch (error) {
+      showFeedback('Erro ao alterar senha. Verifique a senha atual.', 'error');
     } finally {
       setIsLoading(false);
     }
   };
-
-  // --- Manipuladores de Deleção ---
 
   const handleDeleteAccount = async () => {
-    if (deleteConfirm !== user?.email) {
-      showNotification('E-mail digitado não corresponde ao seu e-mail', 'error');
-      return;
+    if (deleteEmail !== user?.email) {
+      return showFeedback('E-mail de confirmação incorreto.', 'error');
     }
-
-    if (!window.confirm('Tem certeza? Esta ação é permanente e não pode ser desfeita.')) {
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      await api.delete('/users/me_delete/');
-      showNotification('Conta deletada. Redirecionando...', 'success');
-      setTimeout(() => {
+    if (window.confirm('Tem certeza absoluta? Esta ação é irreversível.')) {
+      try {
+        await api.delete('/users/me_delete/');
         navigate('/entrar');
-      }, 2000);
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.detail || 'Falha ao deletar conta';
-      showNotification(errorMessage, 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // --- Resetar formulário ao trocar aba ---
-  useEffect(() => {
-    if (activeTab !== 'info') {
-      setIsEditingInfo(false);
-      if (user) {
-        setEditInfoData({
-          first_name: user.first_name || '',
-          last_name: user.last_name || '',
-        });
+      } catch (error) {
+        showFeedback('Erro ao deletar conta.', 'error');
       }
     }
-  }, [activeTab, user]);
-
-  // --- Componente de Notificação ---
-  const NotificationComponent = () => {
-    if (!notification) return null;
-
-    const icon = {
-      success: <CheckCircle size={20} />,
-      error: <AlertTriangle size={20} />,
-      info: <AlertTriangle size={20} />,
-    }[notification.type];
-
-    return (
-      <div className={`${styles.notification} ${styles[notification.type]}`}>
-        {icon}
-        <span>{notification.message}</span>
-        <button className={styles.notificationClose} onClick={() => setNotification(null)}>
-          <XCircle size={18} />
-        </button>
-      </div>
-    );
   };
 
-  if (!user) {
-    return (
-      <div className={styles.wrapper}>
-        <Navbar />
-        <div className={styles.container}>
-          <div style={{ textAlign: 'center', padding: '2rem' }}>
-            Carregando perfil...
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (!user) return <Wrapper><Navbar /><Container>Carregando...</Container></Wrapper>;
 
   return (
-    <div className={styles.wrapper}>
+    <Wrapper>
       <Navbar />
+      <Container>
+        
+        {/* Header Fixo */}
+        <ProfileHeader>
+          <AvatarWrapper>
+            <img src={avatarPreview || "https://via.placeholder.com/150"} alt="Avatar" />
+            <AvatarUploadButton htmlFor="avatar-upload">
+              <Camera size={16} />
+            </AvatarUploadButton>
+            <input 
+              id="avatar-upload" 
+              type="file" 
+              hidden 
+              accept="image/*"
+              onChange={handleAvatarChange} 
+            />
+          </AvatarWrapper>
+          <UserInfo>
+            <h1>{user.first_name} {user.last_name}</h1>
+            <p>{user.email}</p>
+          </UserInfo>
+        </ProfileHeader>
 
-      {/* Container de Notificação */}
-      <NotificationComponent />
+        {/* Navegação por Abas */}
+        <TabsContainer>
+          <Tab 
+            $active={activeTab === 'general'} 
+            onClick={() => setActiveTab('general')}
+          >
+            <User size={18} /> Dados Pessoais
+          </Tab>
+          <Tab 
+            $active={activeTab === 'security'} 
+            onClick={() => setActiveTab('security')}
+          >
+            <Shield size={18} /> Segurança
+          </Tab>
+          <Tab 
+            $active={activeTab === 'danger'} 
+            onClick={() => setActiveTab('danger')}
+          >
+            <AlertTriangle size={18} /> Zona de Perigo
+          </Tab>
+        </TabsContainer>
 
-      <div className={styles.container}>
-        <div className={styles.mainContent}>
-          {/* Cabeçalho */}
-          <div className={styles.header}>
-            <h1 className={styles.title}>Minha Conta</h1>
-            <p className={styles.subtitle}>Gerencie suas informações de perfil e preferências de segurança</p>
-          </div>
+        {/* Conteúdo da Aba: Geral */}
+        {activeTab === 'general' && (
+          <ContentCard>
+            <CardTitle>Informações Básicas</CardTitle>
+            <CardDescription>Atualize suas informações pessoais e endereço de e-mail.</CardDescription>
+            
+            <form onSubmit={handleUpdateProfile}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <FormGroup>
+                  <label>Nome</label>
+                  <Input 
+                    value={formData.first_name} 
+                    onChange={e => setFormData({...formData, first_name: e.target.value})}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <label>Sobrenome</label>
+                  <Input 
+                    value={formData.last_name} 
+                    onChange={e => setFormData({...formData, last_name: e.target.value})}
+                  />
+                </FormGroup>
+              </div>
+              <FormGroup>
+                <label>E-mail</label>
+                <Input 
+                  type="email"
+                  value={formData.email} 
+                  onChange={e => setFormData({...formData, email: e.target.value})}
+                />
+              </FormGroup>
 
-          {/* Seção de Avatar */}
-          <div className={styles.avatarSection}>
-            <div className={styles.avatarContainer}>
-              {avatarPreview ? (
-                <img src={avatarPreview} alt="Avatar do perfil" className={styles.avatar} />
-              ) : (
-                <div className={styles.avatarPlaceholder}>
-                  <Camera size={40} />
-                </div>
-              )}
-              <label htmlFor="avatarInput" className={styles.avatarUploadButton}>
-                <Camera size={20} />
-              </label>
-              <input
-                id="avatarInput"
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className={styles.hiddenInput}
-                disabled={isLoading}
+              <ButtonGroup>
+                <Button type="submit" disabled={isLoading}>
+                  <Save size={18} /> Salvar Alterações
+                </Button>
+              </ButtonGroup>
+            </form>
+          </ContentCard>
+        )}
+
+        {/* Conteúdo da Aba: Segurança */}
+        {activeTab === 'security' && (
+          <ContentCard>
+            <CardTitle>Alterar Senha</CardTitle>
+            <CardDescription>Mantenha sua conta segura usando uma senha forte.</CardDescription>
+            
+            <form onSubmit={handleUpdatePassword}>
+              <FormGroup>
+                <label>Senha Atual</label>
+                <Input 
+                  type="password"
+                  placeholder="••••••••"
+                  value={passData.current}
+                  onChange={e => setPassData({...passData, current: e.target.value})}
+                />
+              </FormGroup>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <FormGroup>
+                  <label>Nova Senha</label>
+                  <Input 
+                    type="password"
+                    placeholder="••••••••"
+                    value={passData.new}
+                    onChange={e => setPassData({...passData, new: e.target.value})}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <label>Confirmar Nova Senha</label>
+                  <Input 
+                    type="password"
+                    placeholder="••••••••"
+                    value={passData.confirm}
+                    onChange={e => setPassData({...passData, confirm: e.target.value})}
+                  />
+                </FormGroup>
+              </div>
+
+              <ButtonGroup>
+                <Button type="submit" disabled={isLoading}>
+                  <Lock size={18} /> Atualizar Senha
+                </Button>
+              </ButtonGroup>
+            </form>
+          </ContentCard>
+        )}
+
+        {/* Conteúdo da Aba: Perigo */}
+        {activeTab === 'danger' && (
+          <ContentCard style={{ borderColor: theme.colors.danger }}>
+            <CardTitle style={{ color: theme.colors.danger }}>Deletar Conta</CardTitle>
+            <CardDescription>
+              Esta ação irá remover permanentemente todos os seus dados. Digite seu e-mail <strong>({user.email})</strong> para confirmar.
+            </CardDescription>
+            
+            <FormGroup>
+              <Input 
+                placeholder={user.email}
+                value={deleteEmail}
+                onChange={e => setDeleteEmail(e.target.value)}
+                style={{ borderColor: theme.colors.danger }}
               />
-            </div>
-            <div>
-              <h2 className={styles.avatarName}>
-                {user.first_name} {user.last_name}
-              </h2>
-              <p className={styles.avatarEmail}>{user.email}</p>
-            </div>
-          </div>
+            </FormGroup>
 
-          {/* Abas */}
-          <div className={styles.tabs}>
-            <button
-              className={`${styles.tabButton} ${activeTab === 'info' ? styles.active : ''}`}
-              onClick={() => setActiveTab('info')}
-              disabled={isLoading}
-            >
-              Informações
-            </button>
-            <button
-              className={`${styles.tabButton} ${activeTab === 'email' ? styles.active : ''}`}
-              onClick={() => setActiveTab('email')}
-              disabled={isLoading}
-            >
-              E-mail
-            </button>
-            <button
-              className={`${styles.tabButton} ${activeTab === 'password' ? styles.active : ''}`}
-              onClick={() => setActiveTab('password')}
-              disabled={isLoading}
-            >
-              Senha
-            </button>
-            <button
-              className={`${styles.tabButton} ${activeTab === 'danger' ? styles.active : ''}`}
-              onClick={() => setActiveTab('danger')}
-              disabled={isLoading}
-            >
-              Perigo
-            </button>
-          </div>
+            <ButtonGroup>
+              <Button 
+                $variant="danger" 
+                onClick={handleDeleteAccount}
+                disabled={deleteEmail !== user.email || isLoading}
+              >
+                <Trash2 size={18} /> Excluir Conta Permanentemente
+              </Button>
+            </ButtonGroup>
+          </ContentCard>
+        )}
 
-          {/* Conteúdo das Abas */}
-          <div className={styles.tabContent}>
-            {/* Aba: Informações */}
-            {activeTab === 'info' && (
-              <div className={styles.section}>
-                <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>Informações do Perfil</h2>
-                  {!isEditingInfo && (
-                    <button
-                      className={styles.editButton}
-                      onClick={() => setIsEditingInfo(true)}
-                      disabled={isLoading}
-                    >
-                      <Edit size={16} />
-                      Editar
-                    </button>
-                  )}
-                </div>
+      </Container>
 
-                {!isEditingInfo ? (
-                  <div className={styles.infoGrid}>
-                    <div className={styles.infoItem}>
-                      <label className={styles.infoLabel}>Nome</label>
-                      <p className={styles.infoValue}>{user.first_name}</p>
-                    </div>
-                    <div className={styles.infoItem}>
-                      <label className={styles.infoLabel}>Sobrenome</label>
-                      <p className={styles.infoValue}>{user.last_name || '—'}</p>
-                    </div>
-                    <div className={styles.infoItem}>
-                      <label className={styles.infoLabel}>Membro desde</label>
-                      <p className={styles.infoValue}>
-                        {new Date(user.date_joined).toLocaleDateString('pt-BR')}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <form className={styles.form} onSubmit={handleInfoSave}>
-                    <div className={styles.formGroup}>
-                      <label htmlFor="firstName">Nome</label>
-                      <input
-                        id="firstName"
-                        type="text"
-                        className={styles.input}
-                        value={editInfoData.first_name}
-                        onChange={(e) =>
-                          setEditInfoData({ ...editInfoData, first_name: e.target.value })
-                        }
-                        disabled={isLoading}
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label htmlFor="lastName">Sobrenome</label>
-                      <input
-                        id="lastName"
-                        type="text"
-                        className={styles.input}
-                        value={editInfoData.last_name}
-                        onChange={(e) =>
-                          setEditInfoData({ ...editInfoData, last_name: e.target.value })
-                        }
-                        disabled={isLoading}
-                      />
-                    </div>
-                    <div className={styles.formActions}>
-                      <button
-                        type="button"
-                        className={styles.secondaryButton}
-                        onClick={handleInfoCancel}
-                        disabled={isLoading}
-                      >
-                        <XCircle size={18} />
-                        Cancelar
-                      </button>
-                      <button type="submit" className={styles.primaryButton} disabled={isLoading}>
-                        <Save size={18} />
-                        {isLoading ? 'Salvando...' : 'Salvar'}
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
-            )}
-
-            {/* Aba: E-mail */}
-            {activeTab === 'email' && (
-              <div className={styles.section}>
-                <h2 className={styles.sectionTitle}>Alterar E-mail</h2>
-                <p className={styles.sectionDescription}>
-                  E-mail atual: <strong>{user.email}</strong>
-                </p>
-
-                <form
-                  className={styles.form}
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleChangeEmail();
-                  }}
-                >
-                  <div className={styles.formGroup}>
-                    <label htmlFor="newEmail">Novo E-mail</label>
-                    <input
-                      id="newEmail"
-                      type="email"
-                      className={styles.input}
-                      placeholder="seu.novo@email.com"
-                      value={emailData.newEmail}
-                      onChange={(e) => setEmailData({ newEmail: e.target.value })}
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <button type="submit" className={styles.primaryButton} disabled={isLoading}>
-                    <Mail size={18} />
-                    {isLoading ? 'Alterando...' : 'Alterar E-mail'}
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {/* Aba: Senha */}
-            {activeTab === 'password' && (
-              <div className={styles.section}>
-                <h2 className={styles.sectionTitle}>Alterar Senha</h2>
-                <p className={styles.sectionDescription}>
-                  Escolha uma senha forte com pelo menos 8 caracteres
-                </p>
-
-                <form
-                  className={styles.form}
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleChangePassword();
-                  }}
-                >
-                  <div className={styles.formGroup}>
-                    <label htmlFor="currentPassword">Senha Atual</label>
-                    <div className={styles.passwordWrapper}>
-                      <input
-                        id="currentPassword"
-                        type={showPassword ? 'text' : 'password'}
-                        className={styles.input}
-                        placeholder="••••••••"
-                        value={passwordData.current}
-                        onChange={(e) => setPasswordData({ ...passwordData, current: e.target.value })}
-                        disabled={isLoading}
-                      />
-                      <button
-                        type="button"
-                        className={styles.passwordToggle}
-                        onClick={() => setShowPassword(!showPassword)}
-                        aria-label="Mostrar/Ocultar senha"
-                        disabled={isLoading}
-                      >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label htmlFor="newPassword">Nova Senha</label>
-                    <div className={styles.passwordWrapper}>
-                      <input
-                        id="newPassword"
-                        type={showNewPassword ? 'text' : 'password'}
-                        className={styles.input}
-                        placeholder="••••••••"
-                        value={passwordData.new}
-                        onChange={(e) => setPasswordData({ ...passwordData, new: e.target.value })}
-                        disabled={isLoading}
-                      />
-                      <button
-                        type="button"
-                        className={styles.passwordToggle}
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                        aria-label="Mostrar/Ocultar nova senha"
-                        disabled={isLoading}
-                      >
-                        {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label htmlFor="confirmPassword">Confirmar Nova Senha</label>
-                    <div className={styles.passwordWrapper}>
-                      <input
-                        id="confirmPassword"
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        className={styles.input}
-                        placeholder="••••••••"
-                        value={passwordData.confirm}
-                        onChange={(e) => setPasswordData({ ...passwordData, confirm: e.target.value })}
-                        disabled={isLoading}
-                      />
-                      <button
-                        type="button"
-                        className={styles.passwordToggle}
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        aria-label="Mostrar/Ocultar confirmação de senha"
-                        disabled={isLoading}
-                      >
-                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <button type="submit" className={styles.primaryButton} disabled={isLoading}>
-                    <Lock size={18} />
-                    {isLoading ? 'Alterando...' : 'Alterar Senha'}
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {/* Aba: Perigo */}
-            {activeTab === 'danger' && (
-              <div className={styles.section}>
-                <h2 className={styles.sectionTitle}>Zona de Perigo</h2>
-                <p className={styles.sectionDescription}>Ações irreversíveis na sua conta</p>
-
-                <div className={styles.dangerZone}>
-                  <div className={styles.dangerCard}>
-                    <h3 className={styles.dangerTitle}>Deletar Conta</h3>
-                    <p className={styles.dangerDescription}>
-                      Ao deletar sua conta, todos os seus dados serão permanentemente removidos e
-                      esta ação não pode ser desfeita.
-                    </p>
-
-                    <form
-                      className={styles.form}
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        handleDeleteAccount();
-                      }}
-                    >
-                      <div className={styles.formGroup}>
-                        <label htmlFor="deleteConfirm">
-                          Digite seu e-mail para confirmar: <strong>{user.email}</strong>
-                        </label>
-                        <input
-                          id="deleteConfirm"
-                          type="text"
-                          className={styles.input}
-                          placeholder={user.email}
-                          value={deleteConfirm}
-                          onChange={(e) => setDeleteConfirm(e.target.value)}
-                          disabled={isLoading}
-                        />
-                      </div>
-
-                      <button
-                        type="submit"
-                        className={styles.dangerButton}
-                        disabled={deleteConfirm !== user.email || isLoading}
-                      >
-                        <Trash2 size={18} />
-                        {isLoading ? 'Deletando...' : 'Deletar Minha Conta'}
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+      {/* Feedback Toast */}
+      {feedback && (
+        <Notification $type={feedback.type}>
+          {feedback.type === 'success' ? <CheckCircle size={20} /> : <XCircle size={20} />}
+          {feedback.msg}
+        </Notification>
+      )}
+    </Wrapper>
   );
 }
 

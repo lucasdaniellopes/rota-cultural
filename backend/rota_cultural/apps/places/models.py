@@ -9,6 +9,7 @@ class TouristSpot(models.Model):
     opening_time = models.TimeField()
     closing_time = models.TimeField()
     accessibility = models.TextField(blank=True)
+    image = models.ImageField(upload_to='tourist_spots/', blank=True, null=True)
 
     address = models.ForeignKey(Address, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)

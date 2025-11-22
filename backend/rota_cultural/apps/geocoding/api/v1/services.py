@@ -76,6 +76,7 @@ class NominatimService:
             return data
 
         except requests.RequestException as e:
+            print(f"Nominatim reverse geocoding error: {e}")
             logger.error(f"Nominatim reverse geocoding error: {e}")
             return None
 

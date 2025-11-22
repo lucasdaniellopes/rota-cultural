@@ -8,6 +8,7 @@ import SignupPage from '@/pages/SignupPage';
 import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
 import TouristPlacesPage from '@/pages/TouristPlacesPage';
 import TouristPlaceDetailPage from '@/pages/TouristPlaceDetailPage';
+import CreateTouristPlacePage from '@/pages/CreateTouristPlacePage';
 import EventsPage from '@/pages/EventsPage';
 import EventDetailPage from '@/pages/EventDetailPage';
 import CreateEventPage from '@/pages/CreateEventPage';
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/cadastro" element={<SignupPage />} />
           <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
           <Route path="/pontos-turisticos" element={<TouristPlacesPage />} />
+          <Route path="/pontos-turisticos/criar" element={<PrivateRoute><CreateTouristPlacePage /></PrivateRoute>} />
           <Route path="/pontos-turisticos/:id" element={<TouristPlaceDetailPage />} />
           <Route path="/eventos" element={<EventsPage />} />
           <Route path="/eventos/criar" element={<PrivateRoute><CreateEventPage /></PrivateRoute>} />

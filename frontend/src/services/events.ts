@@ -23,6 +23,8 @@ export interface Event {
   created_at?: string;
   updated_at?: string;
   is_free?: boolean;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface CreateEventData {

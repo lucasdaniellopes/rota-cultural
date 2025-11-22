@@ -35,7 +35,9 @@ urlpatterns = [
     path('api/v1/', include('rota_cultural.apps.events.api.v1.routes')),
     path('api/v1/', include('rota_cultural.apps.addresses.api.v1.routes')),
     path('api/v1/', include('rota_cultural.apps.categories.api.v1.routes')),
+    path('api/v1/', include('rota_cultural.apps.places.api.v1.routes')),
 ]
+
 
 # Servir arquivos de mídia em desenvolvimento
 if settings.DEBUG:

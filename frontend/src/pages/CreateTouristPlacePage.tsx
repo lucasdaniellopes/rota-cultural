@@ -1,9 +1,9 @@
 import styled, { css, keyframes } from 'styled-components';
 import { useState, useEffect, useRef, type FormEvent, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, Save, XCircle, AlertTriangle, CheckCircle, Accessibility, Image as ImageIcon, Search } from 'lucide-react';
+import { MapPin, Save, XCircle, AlertTriangle, CheckCircle, Accessibility, Image as ImageIcon, Search, Clock } from 'lucide-react';
 import Navbar from '../components/Navbar';
-import { eventsService, type Category } from '@/services/events';
+import { placesService, type Category } from '@/services/places';
 import { geocodingService, type NominatimResult } from '@/services/geocoding';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -13,7 +13,7 @@ const slideIn = keyframes`
   to { transform: translateX(0); opacity: 1; }
 `;
 
-// --- Styled Components ---
+// --- Styled Components (Reutilizados do CreateEventPage) ---
 
 const PageWrapper = styled.div`
   min-height: 100vh;
@@ -422,7 +422,8 @@ const NotificationClose = styled.button`
   &:hover { color: #1a1a1a; }
 `;
 
-// --- Types ---
+// --- Logic & Component ---
+
 type NotificationType = 'success' | 'error' | 'info';
 
 interface LocationCoordinates {
@@ -432,19 +433,17 @@ interface LocationCoordinates {
 }
 
 const DEFAULT_CATEGORIES: Category[] = [
-  { id: 1, name: 'Música', item_type: 'event' },
-  { id: 2, name: 'Teatro', item_type: 'event' },
-  { id: 3, name: 'Dança', item_type: 'event' },
-  { id: 4, name: 'Cinema', item_type: 'event' },
-  { id: 5, name: 'Artes Visuais', item_type: 'event' },
-  { id: 6, name: 'Literatura', item_type: 'event' },
-  { id: 7, name: 'Gastronomia', item_type: 'event' },
-  { id: 8, name: 'Festival', item_type: 'event' },
-  { id: 9, name: 'Exposição', item_type: 'event' },
-  { id: 10, name: 'Workshop', item_type: 'event' },
+  { id: 1, name: 'Religioso', item_type: 'place' },
+  { id: 2, name: 'Cultural', item_type: 'place' },
+  { id: 3, name: 'Histórico', item_type: 'place' },
+  { id: 4, name: 'Natureza', item_type: 'place' },
+  { id: 5, name: 'Comércio', item_type: 'place' },
+  { id: 6, name: 'Lazer', item_type: 'place' },
+  { id: 7, name: 'Gastronomia', item_type: 'place' },
+  { id: 8, name: 'Museu', item_type: 'place' },
 ];
 
-function CreateEventPage() {
+function CreateTouristPlacePage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [notification, setNotification] = useState<{message: string, type: NotificationType} | null>(null);
@@ -463,11 +462,8 @@ function CreateEventPage() {
     name: '',
     description: '',
     category: '',
-    start_date: '',
-    end_date: '',
-    start_time: '',
-    end_time: '',
-    price: '',
+    opening_time: '',
+    closing_time: '',
     accessibility: '',
   });
 
@@ -481,8 +477,10 @@ function CreateEventPage() {
 
   const loadCategories = async () => {
     try {
-      const data = await eventsService.getCategories();
-      if (data && data.length > 0) setCategories(data);
+      const data = await placesService.getCategories();
+      if (data && data.length > 0) {
+        setCategories(data);
+      }
     } catch (err) {
       console.warn('Usando categorias pré-definidas');
     }
@@ -565,35 +563,24 @@ function CreateEventPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name.trim()) return showNotification('O título é obrigatório.', 'error');
+    if (!formData.name.trim()) return showNotification('O nome é obrigatório.', 'error');
     if (!formData.description.trim()) return showNotification('A descrição é obrigatória.', 'error');
     if (!formData.category) return showNotification('Selecione uma categoria.', 'error');
-    if (!formData.start_date) return showNotification('A data de início é obrigatória.', 'error');
-    if (!formData.end_date) return showNotification('A data de término é obrigatória.', 'error');
-    if (!formData.start_time || !formData.end_time) return showNotification('Os horários são obrigatórios.', 'error');
-    if (!formData.price.trim()) return showNotification('O preço é obrigatório (use 0 para gratuito).', 'error');
-    if (!selectedLocation) return showNotification('Selecione uma localização para o evento.', 'error');
+    if (!selectedLocation) return showNotification('Selecione uma localização.', 'error');
+    if (!formData.opening_time || !formData.closing_time) return showNotification('Os horários de funcionamento são obrigatórios.', 'error');
 
     setIsLoading(true);
     try {
-      const startDateTime = `${formData.start_date}T${formData.start_time}:00`;
-      const endDateTime = `${formData.end_date}T${formData.end_time}:00`;
-      const startTimeFormatted = `${formData.start_time}:00`;
-      const endTimeFormatted = `${formData.end_time}:00`;
-
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
       formDataToSend.append('description', formData.description);
       formDataToSend.append('category', formData.category);
-      formDataToSend.append('start_date', startDateTime);
-      formDataToSend.append('end_date', endDateTime);
-      formDataToSend.append('start_time', startTimeFormatted);
-      formDataToSend.append('end_time', endTimeFormatted);
-      formDataToSend.append('price', formData.price);
+      formDataToSend.append('opening_time', `${formData.opening_time}:00`);
+      formDataToSend.append('closing_time', `${formData.closing_time}:00`);
       formDataToSend.append('accessibility', formData.accessibility);
       
       if (selectedLocation) {
-        formDataToSend.append('location_name_input', selectedLocation.name);
+        formDataToSend.append('address_name', selectedLocation.name);
         formDataToSend.append('latitude', String(selectedLocation.latitude));
         formDataToSend.append('longitude', String(selectedLocation.longitude));
       }
@@ -602,14 +589,21 @@ function CreateEventPage() {
         formDataToSend.append('image', imageFile);
       }
 
-      await eventsService.createEvent(formDataToSend as any);
-      showNotification('Evento criado com sucesso!', 'success', 2000);
-      setTimeout(() => navigate('/eventos'), 2000);
+      await placesService.createTouristSpot(formDataToSend as any);
+      showNotification('Ponto turístico criado com sucesso!', 'success', 2000);
+      setTimeout(() => navigate('/pontos-turisticos'), 2000);
     } catch (err: any) {
       console.error(err);
-      showNotification('Erro ao criar evento. Tente novamente.', 'error');
+      const errorMessage = err.response?.data?.detail || 'Erro ao criar ponto turístico. Tente novamente.';
+      showNotification(errorMessage, 'error');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (window.confirm('Deseja cancelar a criação? Os dados não serão salvos.')) {
+      navigate('/pontos-turisticos');
     }
   };
 
@@ -629,14 +623,14 @@ function CreateEventPage() {
 
       <Container>
         <Header>
-          <Title>Criar Novo Evento</Title>
-          <Subtitle>Preencha os dados do seu evento cultural</Subtitle>
+          <Title>Criar Novo Ponto Turístico</Title>
+          <Subtitle>Preencha os dados do ponto turístico</Subtitle>
         </Header>
 
         <Form onSubmit={handleSubmit}>
-          {/* Capa */}
+          {/* Imagem do Local */}
           <Section>
-            <SectionTitle><ImageIcon size={20} /> Capa do Evento</SectionTitle>
+            <SectionTitle><ImageIcon size={20} /> Imagem do Local</SectionTitle>
             <FormGroup>
               <Label>Imagem de Capa</Label>
               {imagePreview ? (
@@ -659,62 +653,54 @@ function CreateEventPage() {
             </FormGroup>
           </Section>
 
-          {/* Info Básica */}
+          {/* Informações Básicas */}
           <Section>
             <SectionTitle>Informações Básicas</SectionTitle>
             <FormGroup>
-              <Label htmlFor="name">Título do Evento *</Label>
-              <Input id="name" type="text" placeholder="Ex: Festival de Música Popular" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} disabled={isLoading} />
+              <Label htmlFor="name">Nome do Local *</Label>
+              <Input id="name" type="text" placeholder="Ex: Igreja Nossa Senhora da Conceição" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} disabled={isLoading} />
             </FormGroup>
             <FormGroup>
               <Label htmlFor="description">Descrição *</Label>
-              <TextArea id="description" placeholder="Descreva seu evento..." rows={4} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} disabled={isLoading} />
+              <TextArea id="description" placeholder="Descreva o local, sua história, características..." rows={4} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} disabled={isLoading} />
             </FormGroup>
             <FormGroup>
               <Label htmlFor="category">Categoria *</Label>
               <Select id="category" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} disabled={isLoading}>
                 <option value="">Selecione uma categoria</option>
-                {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
               </Select>
             </FormGroup>
           </Section>
 
-          {/* Data e Hora */}
+          {/* Horário de Funcionamento */}
           <Section>
-            <SectionTitle><Calendar size={20} /> Data e Horário</SectionTitle>
+            <SectionTitle><Clock size={20} /> Horário de Funcionamento</SectionTitle>
             <FormRow>
               <FormGroup>
-                <Label htmlFor="start_date">Data de Início *</Label>
-                <Input id="start_date" type="date" value={formData.start_date} onChange={(e) => setFormData({ ...formData, start_date: e.target.value })} disabled={isLoading} />
+                <Label htmlFor="opening_time">Horário de Abertura *</Label>
+                <Input id="opening_time" type="time" value={formData.opening_time} onChange={(e) => setFormData({ ...formData, opening_time: e.target.value })} disabled={isLoading} />
               </FormGroup>
               <FormGroup>
-                <Label htmlFor="end_date">Data de Término *</Label>
-                <Input id="end_date" type="date" value={formData.end_date} onChange={(e) => setFormData({ ...formData, end_date: e.target.value })} disabled={isLoading} />
-              </FormGroup>
-            </FormRow>
-            <FormRow>
-              <FormGroup>
-                <Label htmlFor="start_time">Horário de Início *</Label>
-                <Input id="start_time" type="time" value={formData.start_time} onChange={(e) => setFormData({ ...formData, start_time: e.target.value })} disabled={isLoading} />
-              </FormGroup>
-              <FormGroup>
-                <Label htmlFor="end_time">Horário de Término *</Label>
-                <Input id="end_time" type="time" value={formData.end_time} onChange={(e) => setFormData({ ...formData, end_time: e.target.value })} disabled={isLoading} />
+                <Label htmlFor="closing_time">Horário de Fechamento *</Label>
+                <Input id="closing_time" type="time" value={formData.closing_time} onChange={(e) => setFormData({ ...formData, closing_time: e.target.value })} disabled={isLoading} />
               </FormGroup>
             </FormRow>
           </Section>
 
-          {/* Local e Preço */}
+          {/* Localização */}
           <Section>
-            <SectionTitle><MapPin size={20} /> Local e Valores</SectionTitle>
+            <SectionTitle><MapPin size={20} /> Localização</SectionTitle>
             <FormGroup>
-              <Label>Local do Evento *</Label>
+              <Label>Buscar Endereço *</Label>
               <SearchInputContainer>
                 <SearchInputWrapper>
                   <Search size={18} />
                   <Input 
                     type="text" 
-                    placeholder="Busque por endereço, local ou bairro..." 
+                    placeholder="Digite o endereço ou nome do local..." 
                     value={locationSearch} 
                     onChange={(e) => handleLocationSearch(e.target.value)} 
                     onFocus={() => locationSearch.length >= 2 && setShowLocationDropdown(true)}
@@ -750,29 +736,24 @@ function CreateEventPage() {
                 )}
               </SearchInputContainer>
             </FormGroup>
-
-            <FormGroup>
-              <Label htmlFor="price">Preço (R$) *</Label>
-              <Input id="price" type="number" step="0.01" min="0" placeholder="0.00 para eventos gratuitos" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} disabled={isLoading} />
-            </FormGroup>
           </Section>
 
           {/* Acessibilidade */}
           <Section>
-            <SectionTitle><Accessibility size={20} /> Acessibilidade</SectionTitle>
+            <SectionTitle><Accessibility size={20} /> Acessibilidade (Opcional)</SectionTitle>
             <FormGroup>
               <Label htmlFor="accessibility">Recursos de Acessibilidade</Label>
-              <TextArea id="accessibility" placeholder="Ex: Rampas de acesso..." rows={3} value={formData.accessibility} onChange={(e) => setFormData({ ...formData, accessibility: e.target.value })} disabled={isLoading} />
+              <TextArea id="accessibility" placeholder="Descreva os recursos de acessibilidade disponíveis (rampas, elevadores, etc.)" rows={3} value={formData.accessibility} onChange={(e) => setFormData({ ...formData, accessibility: e.target.value })} disabled={isLoading} />
             </FormGroup>
           </Section>
 
           {/* Ações */}
           <FormActions>
-            <Button type="button" $variant="outline" onClick={() => navigate('/eventos')} disabled={isLoading}>
+            <Button type="button" $variant="outline" onClick={handleCancel} disabled={isLoading}>
               <XCircle size={18} /> Cancelar
             </Button>
             <Button type="submit" disabled={isLoading}>
-              <Save size={18} /> {isLoading ? 'Criando...' : 'Criar Evento'}
+              <Save size={18} /> {isLoading ? 'Criando...' : 'Criar Ponto Turístico'}
             </Button>
           </FormActions>
         </Form>
@@ -781,4 +762,4 @@ function CreateEventPage() {
   );
 }
 
-export default CreateEventPage;
+export default CreateTouristPlacePage;
