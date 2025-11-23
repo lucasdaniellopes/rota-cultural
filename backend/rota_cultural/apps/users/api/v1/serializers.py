@@ -125,7 +125,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'username', 'email', 'first_name', 'last_name',
+            'email', 'first_name', 'last_name',
             'phone', 'birth_date', 'is_tourist', 'password', 'password_confirm'
         ]
 
@@ -136,10 +136,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         # Verificar se email já existe
         if User.objects.filter(email=attrs['email']).exists():
             raise serializers.ValidationError({"email": "User com este email já existe."})
-
-        # Verificar se username já existe
-        if User.objects.filter(username=attrs['username']).exists():
-            raise serializers.ValidationError({"username": "Um usuário com este nome de usuário já existe."})
 
         attrs.pop('password_confirm')  # Remove do validated_data
         return attrs

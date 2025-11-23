@@ -142,7 +142,6 @@ class RegisterSerializerTest(TestCase):
     def test_register_serializer_valid_data(self):
         """Test serializer with valid registration data."""
         data = {
-            "username": "newuser",
             "email": "newuser@example.com",
             "first_name": "New",
             "last_name": "User",
@@ -161,7 +160,6 @@ class RegisterSerializerTest(TestCase):
     def test_register_serializer_password_mismatch(self):
         """Test serializer with password mismatch."""
         data = {
-            "username": "newuser",
             "email": "newuser@example.com",
             "first_name": "New",
             "last_name": "User",
@@ -184,7 +182,6 @@ class RegisterSerializerTest(TestCase):
         )
 
         data = {
-            "username": "newuser",
             "email": "existing@example.com",  # Duplicate
             "first_name": "New",
             "last_name": "User",
@@ -197,33 +194,11 @@ class RegisterSerializerTest(TestCase):
         assert not serializer.is_valid()
         assert "User com este email já existe." in str(serializer.errors)
 
-    def test_register_serializer_duplicate_username(self):
-        """Test serializer with duplicate username."""
-        # Create existing user
-        User.objects.create_user(
-            username="existinguser",
-            email="existing@example.com",
-            password="testpass123"
-        )
-
-        data = {
-            "username": "existinguser",  # Duplicate
-            "email": "newuser@example.com",
-            "first_name": "New",
-            "last_name": "User",
-            "password": "newpass123",
-            "password_confirm": "newpass123"
-        }
-
-        serializer = RegisterSerializer(data=data)
-
-        assert not serializer.is_valid()
-        assert "Um usuário com este nome de usuário já existe." in str(serializer.errors)
+    # Removed test_register_serializer_duplicate_username - username is now auto-generated
 
     def test_register_serializer_weak_password(self):
         """Test serializer with weak password."""
         data = {
-            "username": "newuser",
             "email": "newuser@example.com",
             "first_name": "New",
             "last_name": "User",
@@ -239,7 +214,6 @@ class RegisterSerializerTest(TestCase):
     def test_register_serializer_missing_required_fields(self):
         """Test serializer with missing required fields."""
         data = {
-            "username": "newuser",
             # Missing email, first_name, last_name, passwords
         }
 
@@ -250,7 +224,6 @@ class RegisterSerializerTest(TestCase):
     def test_register_serializer_invalid_email_format(self):
         """Test serializer with invalid email format."""
         data = {
-            "username": "newuser",
             "email": "invalid-email-format",
             "first_name": "New",
             "last_name": "User",
@@ -265,7 +238,6 @@ class RegisterSerializerTest(TestCase):
     def test_register_serializer_invalid_birth_date(self):
         """Test serializer with invalid birth date."""
         data = {
-            "username": "newuser",
             "email": "newuser@example.com",
             "first_name": "New",
             "last_name": "User",
@@ -281,7 +253,6 @@ class RegisterSerializerTest(TestCase):
     def test_register_serializer_optional_fields(self):
         """Test serializer with optional fields omitted."""
         data = {
-            "username": "newuser",
             "email": "newuser@example.com",
             "first_name": "New",
             "last_name": "User",
@@ -298,7 +269,6 @@ class RegisterSerializerTest(TestCase):
     def test_register_serializer_create_user(self):
         """Test that serializer creates user successfully."""
         data = {
-            "username": "newuser",
             "email": "newuser@example.com",
             "first_name": "New",
             "last_name": "User",
@@ -311,7 +281,7 @@ class RegisterSerializerTest(TestCase):
 
         user = serializer.save()
 
-        assert user.username == "newuser"
+        assert user.username.startswith("user_")  # Username is auto-generated
         assert user.email == "newuser@example.com"
         assert user.first_name == "New"
         assert user.last_name == "User"
@@ -452,7 +422,6 @@ class UserSerializerAuthTest(TestCase):
     def test_user_serializer_create_with_password(self):
         """Test creating user with password hashing."""
         data = {
-            "username": "newuser",
             "email": "newuser@example.com",
             "password": "newpass123"
         }

@@ -26,7 +26,6 @@ export interface SignupData {
   email: string;
   password: string;
   password_confirm: string;
-  username?: string;
   first_name?: string;
   last_name?: string;
 }
@@ -118,7 +117,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: data.email,
         password: data.password,
         password_confirm: data.password_confirm,
-        username: data.username || data.email.split('@')[0], // Fallback: usar parte do email
         first_name: data.first_name || '',
         last_name: data.last_name || '',
       });
@@ -142,8 +140,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           errorMessage = errorData.detail;
         } else if (errorData.non_field_errors?.[0]) {
           errorMessage = errorData.non_field_errors[0];
-        } else if (errorData.username?.[0]) {
-          errorMessage = `Usuário: ${errorData.username[0]}`;
         } else if (errorData.email?.[0]) {
           errorMessage = `Email: ${errorData.email[0]}`;
         } else if (errorData.password?.[0]) {

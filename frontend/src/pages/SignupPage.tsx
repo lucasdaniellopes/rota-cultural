@@ -250,7 +250,6 @@ const ErrorMessage = styled.div`
 `;
 
 interface SignupFormData {
-  username: string;
   first_name: string;
   last_name: string;
   email: string;
@@ -262,7 +261,6 @@ function SignupPage() {
   const navigate = useNavigate();
   const { signup, isLoading, error, clearError } = useAuth();
   const [formData, setFormData] = useState<SignupFormData>({
-    username: '',
     first_name: '',
     last_name: '',
     email: '',
@@ -283,16 +281,6 @@ function SignupPage() {
     setFormError('');
 
     // Validações básicas
-    if (!formData.username.trim()) {
-      setFormError('Nome de usuário é obrigatório');
-      return;
-    }
-
-    if (formData.username.length < 3) {
-      setFormError('Nome de usuário deve ter pelo menos 3 caracteres');
-      return;
-    }
-
     if (!formData.first_name.trim()) {
       setFormError('Nome é obrigatório');
       return;
@@ -320,7 +308,6 @@ function SignupPage() {
         password_confirm: formData.password_confirm,
         first_name: formData.first_name,
         last_name: formData.last_name,
-        username: formData.username,
       });
       navigate('/');
     } catch (err: any) {
@@ -341,13 +328,13 @@ function SignupPage() {
           <FeaturesList>
             <FeatureItem>
               <FeatureIcon viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="#667eea" stroke="#667eea" strokeWidth="1.5"/>
+                <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="#667eea" stroke="#667eea" strokeWidth="1.5" />
               </FeatureIcon>
               <FeatureText>Criar Conteúdo</FeatureText>
             </FeatureItem>
             <FeatureItem>
               <FeatureIcon viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#667eea" stroke="#667eea" strokeWidth="1.5"/>
+                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#667eea" stroke="#667eea" strokeWidth="1.5" />
               </FeatureIcon>
               <FeatureText>Salvar Favoritos</FeatureText>
             </FeatureItem>
@@ -366,21 +353,6 @@ function SignupPage() {
                 {error || formError}
               </ErrorMessage>
             )}
-
-            <Form.Field>
-              <Form.Label htmlFor="username">Nome de Usuário</Form.Label>
-              <Form.Input
-                id="username"
-                name="username"
-                type="text"
-                placeholder="seu_usuario"
-                icon={<User size={20} />}
-                value={formData.username}
-                onChange={handleChange}
-                disabled={isLoading}
-                required
-              />
-            </Form.Field>
 
             <Form.Field>
               <Form.Label htmlFor="first_name">Nome</Form.Label>

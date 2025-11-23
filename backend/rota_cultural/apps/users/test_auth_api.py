@@ -41,7 +41,6 @@ class AuthAPITest(APITestCase):
     def test_register_user_success(self):
         """Test successful user registration."""
         data = {
-            "username": "newuser",
             "email": "newuser@example.com",
             "first_name": "New",
             "last_name": "User",
@@ -61,7 +60,8 @@ class AuthAPITest(APITestCase):
         assert "user" in response.data
 
         user_data = response.data["user"]
-        assert user_data["username"] == "newuser"
+        assert "username" in user_data  # Username is auto-generated
+        assert user_data["username"].startswith("user_")  # Verify UUID format
         assert user_data["email"] == "newuser@example.com"
         assert user_data["first_name"] == "New"
         assert user_data["last_name"] == "User"
@@ -73,7 +73,6 @@ class AuthAPITest(APITestCase):
     def test_register_user_password_mismatch(self):
         """Test registration failure when passwords don't match."""
         data = {
-            "username": "newuser",
             "email": "newuser@example.com",
             "first_name": "New",
             "last_name": "User",
@@ -89,7 +88,6 @@ class AuthAPITest(APITestCase):
     def test_register_user_duplicate_email(self):
         """Test registration failure with duplicate email."""
         data = {
-            "username": "newuser",
             "email": "test@example.com",  # Existing email
             "first_name": "New",
             "last_name": "User",
@@ -102,26 +100,11 @@ class AuthAPITest(APITestCase):
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "User com este email já existe." in str(response.data)
 
-    def test_register_user_duplicate_username(self):
-        """Test registration failure with duplicate username."""
-        data = {
-            "username": "testuser",  # Existing username
-            "email": "newuser@example.com",
-            "first_name": "New",
-            "last_name": "User",
-            "password": "newpass123",
-            "password_confirm": "newpass123"
-        }
-
-        response = self.client.post(f"{self.base_url}register/", data)
-
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert "Um usuário com este nome de usuário já existe." in str(response.data)
+    # Removed test_register_user_duplicate_username - username is now auto-generated
 
     def test_register_user_weak_password(self):
         """Test registration failure with weak password."""
         data = {
-            "username": "newuser",
             "email": "newuser@example.com",
             "first_name": "New",
             "last_name": "User",
@@ -360,12 +343,11 @@ class AuthSecurityTest(APITestCase):
 
     def test_large_data_handling_in_registration(self):
         """Test handling of unusually large data in registration."""
-        large_username = "a" * 200  # Exceeds model's max_length
+        large_first_name = "a" * 200  # Exceeds model's max_length
 
         data = {
-            "username": large_username,
             "email": "large@example.com",
-            "first_name": "Test",
+            "first_name": large_first_name,
             "last_name": "User",
             "password": "newpass123",
             "password_confirm": "newpass123"
@@ -373,7 +355,7 @@ class AuthSecurityTest(APITestCase):
 
         response = self.client.post(f"{self.base_url}register/", data)
 
-        # Should fail due to username length validation
+        # Should fail due to first_name length validation
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
@@ -398,7 +380,6 @@ class AuthIntegrationTest(APITestCase):
         """Test complete auth flow with user profile access."""
         # 1. Register new user
         register_data = {
-            "username": "newuser",
             "email": "newuser@example.com",
             "first_name": "New",
             "last_name": "User",
@@ -417,7 +398,7 @@ class AuthIntegrationTest(APITestCase):
         # 3. Access user profile
         me_response = self.client.get(f"{self.users_url}me/")
         assert me_response.status_code == status.HTTP_200_OK
-        assert me_response.data["username"] == "newuser"
+        assert "username" in me_response.data  # Username is auto-generated
         assert me_response.data["email"] == "newuser@example.com"
 
         # 4. Update user profile
