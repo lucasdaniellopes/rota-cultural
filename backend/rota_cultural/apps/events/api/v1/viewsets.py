@@ -91,5 +91,5 @@ class EventViewSet(viewsets.ModelViewSet):
             start_date__gte=timezone.now().date()
         ).order_by('start_date')[:10]
 
-        serializer = EventListSerializer(events, many=True)
+        serializer = EventListSerializer(events, many=True, context={'request': request})
         return Response(serializer.data)

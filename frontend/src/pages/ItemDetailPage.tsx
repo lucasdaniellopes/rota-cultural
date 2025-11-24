@@ -30,11 +30,11 @@ const PageWrapper = styled.div`
 const HeroSection = styled.div`
   position: relative;
   width: 100%;
-  height: 400px;
+  height: 300px;
   overflow: hidden;
   background: #212121;
 
-  @media (max-width: 768px) { height: 280px; }
+  @media (max-width: 768px) { height: 220px; }
 `;
 
 const HeroImage = styled.img`
@@ -79,17 +79,17 @@ const BackButtonOverlay = styled.button`
 const Container = styled.div`
   max-width: 900px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 24px 20px;
   animation: ${fadeIn} 0.4s ease-out;
 
-  @media (max-width: 768px) { padding: 24px 16px; }
+  @media (max-width: 768px) { padding: 20px 16px; }
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
   gap: 16px;
 `;
 
@@ -107,12 +107,12 @@ const CategoryBadge = styled.span`
 `;
 
 const Title = styled.h1`
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   color: #1a1a1a;
   margin: 0;
 
-  @media (max-width: 768px) { font-size: 24px; }
+  @media (max-width: 768px) { font-size: 22px; }
 `;
 
 const FavoriteButton = styled.button<{ $active: boolean }>`
@@ -145,17 +145,17 @@ const FavoriteButton = styled.button<{ $active: boolean }>`
 const InfoGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 40px;
+  gap: 12px;
+  margin-bottom: 24px;
 
-  @media (max-width: 768px) { grid-template-columns: 1fr; gap: 12px; }
+  @media (max-width: 768px) { grid-template-columns: 1fr; gap: 10px; }
 `;
 
 const InfoItem = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 16px;
+  padding: 12px;
   background: #f8f9fa;
   border-radius: 8px;
 
@@ -167,7 +167,7 @@ const InfoItem = styled.div`
 `;
 
 const InfoLabel = styled.p`
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #999;
   text-transform: uppercase;
@@ -183,13 +183,13 @@ const InfoValue = styled.p`
 `;
 
 const Section = styled.section`
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 
   h2 {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: #1a1a1a;
-    margin: 0 0 16px 0;
+    margin: 0 0 12px 0;
   }
 `;
 
@@ -215,8 +215,8 @@ const MapPlaceholder = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 40px 20px;
+  gap: 8px;
+  padding: 24px 20px;
   background: #f8f9fa;
   border-radius: 8px;
   color: #999;
@@ -231,35 +231,16 @@ const MapPlaceholder = styled.div`
   }
 `;
 
-const MapButton = styled.button`
-  margin-top: 12px;
-  padding: 10px 24px;
-  background: #141414;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(20, 20, 20, 0.2);
-  }
-`;
-
 const CtaSection = styled.div`
   display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-
-  @media (max-width: 768px) { flex-direction: column; }
+  justify-content: center;
+  margin-top: 16px;
 `;
 
-const BaseButton = styled.button`
-  flex: 1;
-  padding: 12px 20px;
+const PrimaryButton = styled.button`
+  padding: 14px 32px;
+  background: #141414;
+  color: white;
   border: none;
   border-radius: 8px;
   font-size: 15px;
@@ -270,24 +251,11 @@ const BaseButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 8px;
-`;
-
-const PrimaryButton = styled(BaseButton)`
-  background: #141414;
-  color: white;
 
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(20, 20, 20, 0.2);
   }
-`;
-
-const SecondaryButton = styled(BaseButton)`
-  background: #f0f0f0;
-  color: #141414;
-  border: 2px solid #e0e0e0;
-
-  &:hover { background: #e0e0e0; }
 `;
 
 // --- Loading & Error ---
@@ -344,6 +312,8 @@ interface DisplayData {
   accessibility?: string;
   location_display: string;
   organizer?: number;
+  latitude?: number;
+  longitude?: number;
   infoItems: {
     icon: React.ElementType;
     label: string;
@@ -365,6 +335,12 @@ function ItemDetailPage({ type }: ItemDetailPageProps) {
   const { isFavorited, toggleFavorite } = useFavorite(parseInt(id || '0'), type === 'event' ? 'event' : 'touristspot');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Default center (Patos, PB)
+  const center: [number, number] = [
+    parseFloat(import.meta.env.VITE_MAP_CENTER_LAT || '-7.0227'),
+    parseFloat(import.meta.env.VITE_MAP_CENTER_LNG || '-37.2744')
+  ];
 
   useEffect(() => {
     if (id) {
@@ -404,6 +380,8 @@ function ItemDetailPage({ type }: ItemDetailPageProps) {
           accessibility: event.accessibility,
           location_display: event.location_name || 'Local não especificado',
           organizer: event.organizer,
+          latitude: event.latitude,
+          longitude: event.longitude,
           infoItems: [
             {
               icon: Calendar,
@@ -467,6 +445,8 @@ function ItemDetailPage({ type }: ItemDetailPageProps) {
           accessibility: place.accessibility,
           location_display: addressDisplay,
           organizer: place.organizer,
+          latitude: place.address?.latitude,
+          longitude: place.address?.longitude,
           infoItems: infoItems,
           extraSections: extraSections
         });
@@ -621,21 +601,23 @@ function ItemDetailPage({ type }: ItemDetailPageProps) {
           <MapPlaceholder>
             <MapPin size={40} />
             <p>{data.location_display}</p>
-            <MapButton onClick={() => navigate('/mapa')}>
-              Ver no Mapa
-            </MapButton>
           </MapPlaceholder>
         </Section>
 
         <CtaSection>
-          <PrimaryButton onClick={() => navigate('/mapa')}>
+          <PrimaryButton onClick={() => {
+            // Extract coordinates from the data
+            const destinationData = {
+              name: data.title,
+              description: data.location_display,
+              latitude: data.latitude || center[0],
+              longitude: data.longitude || center[1]
+            };
+
+            navigate('/mapa', { state: { destination: destinationData } });
+          }}>
             Como Chegar
           </PrimaryButton>
-          {type === 'place' && (
-            <SecondaryButton>
-              Mais Informações
-            </SecondaryButton>
-          )}
         </CtaSection>
       </Container>
     </PageWrapper>

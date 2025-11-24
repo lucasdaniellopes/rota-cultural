@@ -9,6 +9,7 @@ import { geocodingService, type ReverseGeocodeResult } from '@/services/geocodin
 import AddressSearch from '@/components/map/AddressSearch';
 import Navbar from '@/components/Navbar';
 import { MapPin, Navigation, X, Clock, Circle, ChevronDown } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 // --- Leaflet Fix ---
 delete (Icon.Default.prototype as any)._getIconUrl;
@@ -422,12 +423,13 @@ const FullPageLoading = styled.div`
 // --- Component ---
 
 export default function MapPage() {
+  const locationState = useLocation();
   const [origin, setOrigin] = useState<Location | null>(null);
   const [destination, setDestination] = useState<Location | null>(null);
-  
+
   const [locations, setLocations] = useState<Location[]>([]);
   const [routeData, setRouteData] = useState<RouteData | null>(null);
-  
+
   const [isDestDropdownOpen, setIsDestDropdownOpen] = useState(false);
   const [loadingRoute, setLoadingRoute] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
@@ -453,6 +455,24 @@ export default function MapPage() {
     fetchLocations();
   }, []);
 
+  // Handle incoming destination from other pages
+  useEffect(() => {
+    if (locationState.state?.destination) {
+      const destData = locationState.state.destination;
+      setDestination({
+        id: Date.now(),
+        name: destData.name,
+        description: destData.description,
+        latitude: destData.latitude,
+        longitude: destData.longitude,
+        created_at: new Date().toISOString()
+      });
+
+      // Optional: Clear state to avoid re-setting on refresh (though react-router state persists)
+      // window.history.replaceState({}, document.title);
+    }
+  }, [locationState.state]);
+
   function MapClickHandler({ onMapClick }: { onMapClick: (lat: number, lng: number) => void }) {
     useMapEvents({
       click: (e) => onMapClick(e.latlng.lat, e.latlng.lng),
@@ -474,7 +494,7 @@ export default function MapPage() {
 
   const handleSetLocationFromMap = (type: 'origin' | 'dest') => {
     if (!clickedLocation) return;
-    
+
     const newLoc: Location = {
       id: Date.now(),
       name: clickedLocation.display_name.split(',')[0].trim(),
@@ -526,8 +546,8 @@ export default function MapPage() {
   if (pageLoading) {
     return (
       <FullPageLoading>
-        <Spinner style={{borderColor: 'rgba(255,255,255,0.2)', borderTopColor: 'white'}} />
-        <p style={{fontSize: '0.9rem'}}>Carregando mapa...</p>
+        <Spinner style={{ borderColor: 'rgba(255,255,255,0.2)', borderTopColor: 'white' }} />
+        <p style={{ fontSize: '0.9rem' }}>Carregando mapa...</p>
       </FullPageLoading>
     );
   }
@@ -535,7 +555,7 @@ export default function MapPage() {
   return (
     <PageWrapper>
       <Navbar />
-      
+
       <MapLayout>
         <Sidebar>
           <Header>
@@ -552,14 +572,14 @@ export default function MapPage() {
               <IconWrapper>
                 <Circle size={16} color="#16a34a" fill="#16a34a" />
               </IconWrapper>
-              
+
               <InputGroup>
                 <InputLabel>Ponto de Partida</InputLabel>
                 <SearchWrapper>
                   {origin ? (
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
                       justifyContent: 'space-between',
                       padding: '0 1rem',
                       height: '48px',
@@ -569,13 +589,13 @@ export default function MapPage() {
                       color: '#2e7d32',
                       fontSize: '0.95rem'
                     }}>
-                      <span style={{overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{origin.name}</span>
-                      <button onClick={() => {setOrigin(null); setRouteData(null);}} style={{background:'none', border:'none', cursor:'pointer', color: '#2e7d32', display: 'flex'}}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{origin.name}</span>
+                      <button onClick={() => { setOrigin(null); setRouteData(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2e7d32', display: 'flex' }}>
                         <X size={18} />
                       </button>
                     </div>
                   ) : (
-                    <AddressSearch 
+                    <AddressSearch
                       placeholder="Digite o endereço de partida..."
                       city="Patos"
                       onLocationSelect={(result) => {
@@ -602,12 +622,12 @@ export default function MapPage() {
 
               <InputGroup>
                 <InputLabel>Destino</InputLabel>
-                <div style={{position: 'relative'}}>
+                <div style={{ position: 'relative' }}>
                   <StyledWaypointButton onClick={() => setIsDestDropdownOpen(!isDestDropdownOpen)}>
                     {destination ? (
                       <>
                         <span>{destination.name}</span>
-                        <div role="button" onClick={(e) => { e.stopPropagation(); setDestination(null); setRouteData(null); }} style={{display: 'flex', marginLeft: 'auto'}}>
+                        <div role="button" onClick={(e) => { e.stopPropagation(); setDestination(null); setRouteData(null); }} style={{ display: 'flex', marginLeft: 'auto' }}>
                           <X size={18} color="#6b7280" />
                         </div>
                       </>
@@ -709,9 +729,9 @@ export default function MapPage() {
           </MapContainer>
 
           {loadingAddress && (
-            <div style={{position: 'absolute', top: 20, right: 20, background: 'white', padding: '12px 20px', borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', display: 'flex', gap: 10, alignItems: 'center', zIndex: 1000}}>
-              <Spinner style={{width: 18, height: 18, borderWidth: 2}} />
-              <span style={{fontSize: '0.9rem', fontWeight: 500, color: '#333'}}>Identificando local...</span>
+            <div style={{ position: 'absolute', top: 20, right: 20, background: 'white', padding: '12px 20px', borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', display: 'flex', gap: 10, alignItems: 'center', zIndex: 1000 }}>
+              <Spinner style={{ width: 18, height: 18, borderWidth: 2 }} />
+              <span style={{ fontSize: '0.9rem', fontWeight: 500, color: '#333' }}>Identificando local...</span>
             </div>
           )}
 
@@ -721,7 +741,7 @@ export default function MapPage() {
                 <h3>Resumo do Trajeto</h3>
                 <CloseInfoBtn onClick={() => setRouteData(null)}><X size={20} /></CloseInfoBtn>
               </InfoHeader>
-              
+
               <InfoStats>
                 <StatItem>
                   <div className="icon-box"><Navigation size={20} /></div>
