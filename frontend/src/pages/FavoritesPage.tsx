@@ -352,13 +352,21 @@ function FavoritesPage() {
             }
             return fav as FavoriteItem;
           } catch (err) {
-            console.error(`Error loading favorite ${fav.id}:`, err);
-            return fav as FavoriteItem;
+            // If the item was deleted, remove it from favorites and return null
+            console.error(`Error loading favorite ${fav.id} (item may have been deleted):`, err);
+            try {
+              await favoritesService.removeFavorite(fav.id);
+            } catch (removeErr) {
+              console.error(`Error removing orphaned favorite ${fav.id}:`, removeErr);
+            }
+            return null;
           }
         })
       );
 
-      setFavorites(enrichedFavs);
+      // Filter out null values (deleted items)
+      const validFavorites = enrichedFavs.filter((fav): fav is FavoriteItem => fav !== null);
+      setFavorites(validFavorites);
     } catch (err: any) {
       setError('Falha ao carregar favoritos. Tente novamente.');
       console.error('Error loading favorites:', err);

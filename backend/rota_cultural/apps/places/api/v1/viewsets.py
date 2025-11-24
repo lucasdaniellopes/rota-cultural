@@ -13,7 +13,7 @@ from .serializers import (
 
 
 class TouristSpotViewSet(viewsets.ModelViewSet):
-    queryset = TouristSpot.objects.select_related('address', 'category')
+    queryset = TouristSpot.objects.select_related('address', 'category', 'organizer')
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category']
@@ -25,6 +25,19 @@ class TouristSpotViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return TouristSpotListSerializer
         return TouristSpotSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(organizer=self.request.user)
+
+    def perform_update(self, serializer):
+        if serializer.instance.organizer != self.request.user:
+            raise PermissionError("You don't have permission to edit this tourist spot.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if instance.organizer != self.request.user:
+            raise PermissionError("You don't have permission to delete this tourist spot.")
+        instance.delete()
 
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def featured(self, request):

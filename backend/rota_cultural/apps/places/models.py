@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from rota_cultural.apps.categories.models import Category
 from rota_cultural.apps.addresses.models import Address
 
@@ -13,6 +14,7 @@ class TouristSpot(models.Model):
 
     address = models.ForeignKey(Address, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    organizer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

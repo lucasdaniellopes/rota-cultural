@@ -29,6 +29,7 @@ class AddressSerializer(serializers.ModelSerializer):
 
 class TouristSpotSerializer(serializers.ModelSerializer):
     category_name = serializers.SerializerMethodField()
+    organizer_name = serializers.SerializerMethodField()
     address = AddressSerializer(read_only=True)
     image = serializers.ImageField(required=False)
     image_url = serializers.SerializerMethodField()
@@ -43,13 +44,17 @@ class TouristSpotSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'description', 'opening_time', 'closing_time',
             'accessibility', 'address', 'category', 'category_name',
+            'organizer', 'organizer_name',
             'image', 'image_url', 'address_name', 'latitude', 'longitude',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'organizer', 'created_at', 'updated_at']
 
     def get_category_name(self, obj):
         return obj.category.name if obj.category else None
+
+    def get_organizer_name(self, obj):
+        return obj.organizer.username if obj.organizer else None
 
     def get_image_url(self, obj):
         if obj.image:

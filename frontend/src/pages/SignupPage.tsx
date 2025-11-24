@@ -249,6 +249,123 @@ const ErrorMessage = styled.div`
   font-size: 14px;
 `;
 
+const PopupOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-in-out;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+`;
+
+const PopupContainer = styled.div`
+  background: linear-gradient(135deg, #141414 0%, #212121 100%);
+  border: 2px solid #ffffff;
+  border-radius: 16px;
+  padding: 3rem 2.5rem;
+  max-width: 450px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.4s ease-out;
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 2rem 1.5rem;
+  }
+`;
+
+const PopupIcon = styled.div`
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: scaleIn 0.5s ease-out 0.2s both;
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+
+  svg {
+    width: 48px;
+    height: 48px;
+    stroke: #ffffff;
+    stroke-width: 3;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+`;
+
+const PopupTitle = styled.h2`
+  font-family: 'Inter', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: center;
+  margin: 0 0 1rem 0;
+
+  @media (max-width: 480px) {
+    font-size: 1.5rem;
+  }
+`;
+
+const PopupMessage = styled.p`
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  color: #ffffff;
+  text-align: center;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.6;
+  opacity: 0.9;
+
+  @media (max-width: 480px) {
+    font-size: 0.95rem;
+  }
+`;
+
+const PopupTimer = styled.div`
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  color: #ffffff;
+  text-align: center;
+  opacity: 0.7;
+  margin-top: 1rem;
+`;
+
 interface SignupFormData {
   full_name: string;
   email: string;
@@ -266,6 +383,7 @@ function SignupPage() {
     password_confirm: '',
   });
   const [formError, setFormError] = useState('');
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -306,128 +424,155 @@ function SignupPage() {
         password_confirm: formData.password_confirm,
         full_name: formData.full_name,
       });
-      navigate('/');
+
+      // Show success popup
+      setShowSuccessPopup(true);
+
+      // Redirect to login after 5 seconds
+      setTimeout(() => {
+        navigate('/entrar');
+      }, 5000);
     } catch (err: any) {
       setFormError(error || 'Falha ao registrar. Tente novamente.');
     }
   };
 
   return (
-    <PageContainer>
-      {/* Lado Esquerdo - Branding */}
-      <LeftSection>
-        <BrandingContent>
-          <AppName>Rota Cultural</AppName>
-          <AppDescription>
-            Junte-se à nossa comunidade e descubra os melhores eventos culturais e pontos turísticos de Patos - PB. Crie sua conta e comece a explorar agora!
-          </AppDescription>
+    <>
+      <PageContainer>
+        {/* Lado Esquerdo - Branding */}
+        <LeftSection>
+          <BrandingContent>
+            <AppName>Rota Cultural</AppName>
+            <AppDescription>
+              Junte-se à nossa comunidade e descubra os melhores eventos culturais e pontos turísticos de Patos - PB. Crie sua conta e comece a explorar agora!
+            </AppDescription>
 
-          <FeaturesList>
-            <FeatureItem>
-              <FeatureIcon viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="#667eea" stroke="#667eea" strokeWidth="1.5" />
-              </FeatureIcon>
-              <FeatureText>Criar Conteúdo</FeatureText>
-            </FeatureItem>
-            <FeatureItem>
-              <FeatureIcon viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#667eea" stroke="#667eea" strokeWidth="1.5" />
-              </FeatureIcon>
-              <FeatureText>Salvar Favoritos</FeatureText>
-            </FeatureItem>
-          </FeaturesList>
-        </BrandingContent>
-      </LeftSection>
+            <FeaturesList>
+              <FeatureItem>
+                <FeatureIcon viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="#667eea" stroke="#667eea" strokeWidth="1.5" />
+                </FeatureIcon>
+                <FeatureText>Criar Conteúdo</FeatureText>
+              </FeatureItem>
+              <FeatureItem>
+                <FeatureIcon viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#667eea" stroke="#667eea" strokeWidth="1.5" />
+                </FeatureIcon>
+                <FeatureText>Salvar Favoritos</FeatureText>
+              </FeatureItem>
+            </FeaturesList>
+          </BrandingContent>
+        </LeftSection>
 
-      {/* Lado Direito - Formulário */}
-      <RightSection>
-        <FormContainer>
-          <StyledForm onSubmit={handleSubmit}>
-            <Form.Header>Criar sua conta</Form.Header>
+        {/* Lado Direito - Formulário */}
+        <RightSection>
+          <FormContainer>
+            <StyledForm onSubmit={handleSubmit}>
+              <Form.Header>Criar sua conta</Form.Header>
 
-            {(error || formError) && (
-              <ErrorMessage>
-                {error || formError}
-              </ErrorMessage>
-            )}
+              {(error || formError) && (
+                <ErrorMessage>
+                  {error || formError}
+                </ErrorMessage>
+              )}
 
-            <Form.Field>
-              <Form.Label htmlFor="full_name">Nome Completo</Form.Label>
-              <Form.Input
-                id="full_name"
-                name="full_name"
-                type="text"
-                placeholder="Seu nome completo"
-                icon={<User size={20} />}
-                value={formData.full_name}
-                onChange={handleChange}
-                disabled={isLoading}
-                required
+              <Form.Field>
+                <Form.Label htmlFor="full_name">Nome Completo</Form.Label>
+                <Form.Input
+                  id="full_name"
+                  name="full_name"
+                  type="text"
+                  placeholder="Seu nome completo"
+                  icon={<User size={20} />}
+                  value={formData.full_name}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  required
+                />
+              </Form.Field>
+
+              <Form.Field>
+                <Form.Label htmlFor="email">E-mail</Form.Label>
+                <Form.Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  icon={<Mail size={20} />}
+                  value={formData.email}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  required
+                />
+              </Form.Field>
+
+              <Form.Field>
+                <Form.Label htmlFor="password">Senha</Form.Label>
+                <Form.Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="••••••••"
+                  icon={<Lock size={20} />}
+                  value={formData.password}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  required
+                />
+              </Form.Field>
+
+              <Form.Field>
+                <Form.Label htmlFor="password_confirm">Confirmar Senha</Form.Label>
+                <Form.Input
+                  id="password_confirm"
+                  name="password_confirm"
+                  type="password"
+                  placeholder="••••••••"
+                  icon={<Lock size={20} />}
+                  value={formData.password_confirm}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  required
+                />
+              </Form.Field>
+
+              <SubmitButton disabled={isLoading}>
+                {isLoading ? 'Cadastrando...' : 'Cadastrar'}
+              </SubmitButton>
+
+              <Form.SignUp
+                prefix="Já possui uma conta?"
+                linkText="Fazer login"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/entrar');
+                }}
               />
-            </Form.Field>
+            </StyledForm>
+          </FormContainer>
+        </RightSection>
+      </PageContainer>
 
-            <Form.Field>
-              <Form.Label htmlFor="email">E-mail</Form.Label>
-              <Form.Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="seu@email.com"
-                icon={<Mail size={20} />}
-                value={formData.email}
-                onChange={handleChange}
-                disabled={isLoading}
-                required
-              />
-            </Form.Field>
-
-            <Form.Field>
-              <Form.Label htmlFor="password">Senha</Form.Label>
-              <Form.Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="••••••••"
-                icon={<Lock size={20} />}
-                value={formData.password}
-                onChange={handleChange}
-                disabled={isLoading}
-                required
-              />
-            </Form.Field>
-
-            <Form.Field>
-              <Form.Label htmlFor="password_confirm">Confirmar Senha</Form.Label>
-              <Form.Input
-                id="password_confirm"
-                name="password_confirm"
-                type="password"
-                placeholder="••••••••"
-                icon={<Lock size={20} />}
-                value={formData.password_confirm}
-                onChange={handleChange}
-                disabled={isLoading}
-                required
-              />
-            </Form.Field>
-
-            <SubmitButton disabled={isLoading}>
-              {isLoading ? 'Cadastrando...' : 'Cadastrar'}
-            </SubmitButton>
-
-            <Form.SignUp
-              prefix="Já possui uma conta?"
-              linkText="Fazer login"
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                navigate('/entrar');
-              }}
-            />
-          </StyledForm>
-        </FormContainer>
-      </RightSection>
-    </PageContainer>
+      {/* Success Popup */}
+      {showSuccessPopup && (
+        <PopupOverlay>
+          <PopupContainer>
+            <PopupIcon>
+              <svg viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </PopupIcon>
+            <PopupTitle>Conta Criada com Sucesso!</PopupTitle>
+            <PopupMessage>
+              Sua conta foi criada com sucesso. Você será redirecionado para a página de login em instantes.
+            </PopupMessage>
+            <PopupTimer>Redirecionando em 5 segundos...</PopupTimer>
+          </PopupContainer>
+        </PopupOverlay>
+      )}
+    </>
   );
 }
 
