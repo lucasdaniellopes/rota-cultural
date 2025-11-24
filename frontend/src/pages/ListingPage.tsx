@@ -1,12 +1,21 @@
 import styled from 'styled-components';
-import { MapPin, Search, Plus, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, MapPin, Search, Plus, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Card from '../components/Card';
+import { eventsService, type Event } from '@/services/events';
 import { placesService, type TouristSpotListItem } from '@/services/places';
 import { useAuth } from '@/contexts/AuthContext';
+
+// --- Types ---
+
+type ListingType = 'events' | 'places';
+
+interface ListingPageProps {
+  type: ListingType;
+}
 
 // --- Styled Components ---
 
@@ -16,11 +25,11 @@ const PageWrapper = styled.div`
   min-height: 100vh;
 `;
 
-// Header Section (Dark)
 const HeaderSection = styled.section`
   width: 100%;
-  background: #212121;
+  background: #ffffff;
   padding: 2rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
   
   @media (max-width: 768px) {
     padding: 1.5rem 1rem;
@@ -48,7 +57,7 @@ const HeaderContent = styled.div`
 const HeaderTitle = styled.h1`
   font-size: 2rem;
   font-weight: 700;
-  color: #ffffff;
+  color: #1a1a1a;
   margin: 0;
 
   @media (max-width: 480px) {
@@ -58,7 +67,7 @@ const HeaderTitle = styled.h1`
 
 const HeaderSubtitle = styled.p`
   font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: #6b7280;
   margin: 0.25rem 0 0 0;
 
   @media (max-width: 480px) {
@@ -71,8 +80,8 @@ const CreateButton = styled.button`
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background-color: #ffffff;
-  color: #212121;
+  background-color: #1a1a1a;
+  color: #ffffff;
   border: none;
   border-radius: 0.375rem;
   font-size: 0.95rem;
@@ -83,9 +92,9 @@ const CreateButton = styled.button`
   flex-shrink: 0;
 
   &:hover {
-    background-color: #f0f0f0;
+    background-color: #2d2d2d;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
 
   &:active {
@@ -98,7 +107,6 @@ const CreateButton = styled.button`
   }
 `;
 
-// Filters Section
 const FiltersSection = styled.section`
   width: 100%;
   background-color: #f5f5f5;
@@ -177,17 +185,16 @@ const FilterSelect = styled.select`
   width: 100%;
 
   &:hover {
-    border-color: #141414;
+    border-color: #3b82f6;
   }
 
   &:focus {
     outline: none;
-    border-color: #141414;
-    box-shadow: 0 0 0 2px rgba(20, 20, 20, 0.1);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
   }
 `;
 
-// Content Section
 const ContentSection = styled.section`
   width: 100%;
   background-color: #ffffff;
@@ -239,10 +246,11 @@ const EmptyText = styled.p`
 
 // --- Component Logic ---
 
-function TouristPlacesPage() {
+function ListingPage({ type }: ListingPageProps) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const [places, setPlaces] = useState<TouristSpotListItem[]>([]);
+
+  const [items, setItems] = useState<any[]>([]);
   const [categories, setCategories] = useState<string[]>(['Todas Categorias']);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todas Categorias');
@@ -252,20 +260,45 @@ function TouristPlacesPage() {
 
   const locations = ['Todas Regiões', 'Patos - PB', 'Região Metropolitana'];
 
-  useEffect(() => {
-    loadPlaces();
-    loadCategories();
-  }, []);
+  // Configuration based on type
+  const config = type === 'events' ? {
+    title: 'Eventos',
+    createButtonText: 'Criar Evento',
+    createPath: '/eventos/criar',
+    detailPath: '/eventos',
+    emptyMessage: 'Nenhum evento encontrado',
+    loadingMessage: 'Carregando eventos...',
+    errorMessage: 'Falha ao carregar eventos. Tente novamente.',
+    countSuffix: 'Eventos Encontrados',
+    service: eventsService,
+  } : {
+    title: 'Pontos Turísticos',
+    createButtonText: 'Criar Ponto Turístico',
+    createPath: '/pontos-turisticos/criar',
+    detailPath: '/pontos-turisticos',
+    emptyMessage: 'Nenhum ponto turístico encontrado',
+    loadingMessage: 'Carregando pontos turísticos...',
+    errorMessage: 'Falha ao carregar pontos turísticos. Tente novamente.',
+    countSuffix: 'Locais Encontrados',
+    service: placesService,
+  };
 
-  const loadPlaces = async () => {
+  useEffect(() => {
+    loadItems();
+    loadCategories();
+  }, [type]);
+
+  const loadItems = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await placesService.getTouristSpots();
-      setPlaces(data);
+      const data = type === 'events'
+        ? await eventsService.getEvents({ filter: 'upcoming' })
+        : await placesService.getTouristSpots();
+      setItems(data);
     } catch (err: any) {
-      setError('Falha ao carregar pontos turísticos. Tente novamente.');
-      console.error('Error loading places:', err);
+      setError(config.errorMessage);
+      console.error('Error loading items:', err);
     } finally {
       setIsLoading(false);
     }
@@ -273,54 +306,89 @@ function TouristPlacesPage() {
 
   const loadCategories = async () => {
     try {
-      const data = await placesService.getCategories();
-      const categoryNames = data.map(cat => cat.name);
+      const data = await config.service.getCategories();
+      const categoryNames = data.map((cat: any) => cat.name);
       setCategories(['Todas Categorias', ...categoryNames]);
     } catch (err) {
       console.error('Error loading categories:', err);
     }
   };
 
-  const filteredPlaces = places.filter(place => {
-    const matchesSearch = place.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         place.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'Todas Categorias' || place.category_name === selectedCategory;
-    const matchesLocation = selectedLocation === 'Todas Regiões' || place.location?.includes(selectedLocation);
-    
+  const filteredItems = items.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'Todas Categorias' ||
+      (type === 'events' ? item.category_name : item.category_name) === selectedCategory;
+    const matchesLocation = selectedLocation === 'Todas Regiões' ||
+      (type === 'events' ? item.location_name : item.location)?.includes(selectedLocation);
+
     return matchesSearch && matchesCategory && matchesLocation;
   });
 
-  const handleCreatePlace = () => {
+  const handleCreate = () => {
     if (!isAuthenticated) {
       navigate('/entrar');
       return;
     }
-    navigate('/pontos-turisticos/criar');
+    navigate(config.createPath);
   };
 
-  // Place Card Component
-  const PlaceCard = ({ place }: { place: TouristSpotListItem }) => {
+  // Render Event Card
+  const renderEventCard = (event: Event) => {
+    const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('pt-BR');
+    const formatTime = (timeString: string) => timeString.slice(0, 5);
+    const formatPrice = (price: number | string) => {
+      const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+      return numPrice === 0 ? 'Gratuito' : `R$ ${numPrice.toFixed(2).replace('.', ',')}`;
+    };
 
     return (
-      <Card 
-        image={place.image_url || '/default-place.png'}
-        onClick={() => navigate(`/pontos-turisticos/${place.id}`)}
+      <Card
+        key={event.id}
+        image={event.image_url || "/event-placeholder.jpg"}
+        onClick={() => navigate(`${config.detailPath}/${event.id}`)}
       >
-        <Card.Title>
-          {place.name}
-        </Card.Title>
-        
-        <Card.Description>
-          {place.description}
-        </Card.Description>
-        
+        <Card.Title>{event.name}</Card.Title>
+        <Card.Description>{event.description}</Card.Description>
+        <Card.Meta>
+          <Card.MetaItem icon={<Calendar size={14} />}>
+            {formatDate(event.start_date)}
+          </Card.MetaItem>
+          <Card.MetaItem icon={<Clock size={14} />}>
+            {formatTime(event.start_time)} - {formatTime(event.end_time)}
+          </Card.MetaItem>
+          <Card.MetaItem icon={<MapPin size={14} />}>
+            {event.location_name || 'Local não especificado'}
+          </Card.MetaItem>
+          <Card.MetaItem>
+            <span style={{ color: '#16a34a', fontWeight: '600' }}>
+              {formatPrice(event.price)}
+            </span>
+          </Card.MetaItem>
+        </Card.Meta>
+        <Card.Action onClick={() => navigate(`${config.detailPath}/${event.id}`)}>
+          Ver Detalhes <ArrowRight size={16} style={{ marginLeft: 'auto' }} />
+        </Card.Action>
+      </Card>
+    );
+  };
+
+  // Render Place Card
+  const renderPlaceCard = (place: TouristSpotListItem) => {
+    return (
+      <Card
+        key={place.id}
+        image={place.image_url || '/default-place.png'}
+        onClick={() => navigate(`${config.detailPath}/${place.id}`)}
+      >
+        <Card.Title>{place.name}</Card.Title>
+        <Card.Description>{place.description}</Card.Description>
         <Card.Meta>
           <Card.MetaItem icon={<MapPin size={14} />}>
             {place.location || 'Localização não especificada'}
           </Card.MetaItem>
         </Card.Meta>
-        
-        <Card.Action onClick={() => navigate(`/pontos-turisticos/${place.id}`)}>
+        <Card.Action onClick={() => navigate(`${config.detailPath}/${place.id}`)}>
           Ver Detalhes <ArrowRight size={16} style={{ marginLeft: 'auto' }} />
         </Card.Action>
       </Card>
@@ -330,19 +398,19 @@ function TouristPlacesPage() {
   return (
     <PageWrapper>
       <Navbar />
-      
+
       <HeaderSection>
         <HeaderContainer>
           <HeaderContent>
             <div>
-              <HeaderTitle>Pontos Turísticos</HeaderTitle>
+              <HeaderTitle>{config.title}</HeaderTitle>
               <HeaderSubtitle>
-                {filteredPlaces.length} Locais Encontrados
+                {filteredItems.length} {config.countSuffix}
               </HeaderSubtitle>
             </div>
-            <CreateButton onClick={handleCreatePlace}>
+            <CreateButton onClick={handleCreate}>
               <Plus size={20} />
-              Criar Ponto Turístico
+              {config.createButtonText}
             </CreateButton>
           </HeaderContent>
         </HeaderContainer>
@@ -350,9 +418,8 @@ function TouristPlacesPage() {
 
       <FiltersSection>
         <FiltersContainer>
-          
           <SearchBox>
-            <Search size={18} color="#999" />
+            <Search size={18} color="#9ca3af" />
             <SearchInput
               type="text"
               placeholder="Buscar por nome ou descrição..."
@@ -389,7 +456,7 @@ function TouristPlacesPage() {
         <ContentContainer>
           {isLoading ? (
             <EmptyState>
-              <EmptyText>Carregando pontos turísticos...</EmptyText>
+              <EmptyText>{config.loadingMessage}</EmptyText>
             </EmptyState>
           ) : error ? (
             <EmptyState>
@@ -398,24 +465,25 @@ function TouristPlacesPage() {
           ) : (
             <>
               <CardsGrid>
-                {filteredPlaces.map(place => (
-                  <PlaceCard key={place.id} place={place} />
-                ))}
+                {filteredItems.map(item =>
+                  type === 'events' ? renderEventCard(item) : renderPlaceCard(item)
+                )}
               </CardsGrid>
 
-              {filteredPlaces.length === 0 && !isLoading && (
+              {filteredItems.length === 0 && !isLoading && (
                 <EmptyState>
-                   <Search size={48} color="#d1d5db" style={{ marginBottom: '1rem' }} />
-                   <EmptyText>Nenhum ponto turístico encontrado com os filtros selecionados.</EmptyText>
+                  <Search size={48} color="#d1d5db" style={{ marginBottom: '1rem' }} />
+                  <EmptyText>{config.emptyMessage} com os filtros selecionados.</EmptyText>
                 </EmptyState>
               )}
             </>
           )}
         </ContentContainer>
       </ContentSection>
-          <Footer />
+
+      <Footer />
     </PageWrapper>
   );
 }
 
-export default TouristPlacesPage;
+export default ListingPage;
