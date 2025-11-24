@@ -141,6 +141,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
+        # Generate username if not provided (will be auto-generated in model's save method)
+        # But create_user requires username, so we provide a temporary one
+        import uuid
+        if 'username' not in validated_data:
+            validated_data['username'] = f"user_{uuid.uuid4().hex[:12]}"
+        
         user = User.objects.create_user(**validated_data)
         return user
 

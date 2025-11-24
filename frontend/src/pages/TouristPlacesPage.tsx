@@ -3,6 +3,7 @@ import { MapPin, Search, Plus, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import Card from '../components/Card';
 import { placesService, type TouristSpotListItem } from '@/services/places';
 import { useAuth } from '@/contexts/AuthContext';
@@ -412,6 +413,7 @@ function TouristPlacesPage() {
           )}
         </ContentContainer>
       </ContentSection>
+          <Footer />
     </PageWrapper>
   );
 }

@@ -3,6 +3,7 @@ import { Calendar, Clock, MapPin, Search, Plus, ArrowRight } from 'lucide-react'
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import Card from '../components/Card';
 import { eventsService, type Event } from '@/services/events';
 import { useAuth } from '@/contexts/AuthContext';
@@ -448,6 +449,7 @@ function EventsPage() {
           )}
         </ContentContainer>
       </ContentSection>
+          <Footer />
     </PageWrapper>
   );
 }

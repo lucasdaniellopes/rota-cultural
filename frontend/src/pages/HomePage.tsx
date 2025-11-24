@@ -1,8 +1,9 @@
 import styled from 'styled-components';
-import { Calendar, MapPin, Clock, Eye, Landmark } from 'lucide-react';
+import { Calendar, MapPin, Clock, Landmark } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import Card from '../components/Card';
 import { eventsService } from '../services/events';
 import { placesService, type TouristSpotListItem } from '../services/places';
@@ -260,17 +261,17 @@ function HomePage() {
   return (
     <PageWrapper>
       <Navbar />
-      
+
       {error && (
         <ErrorMessage>{error}</ErrorMessage>
       )}
-      
+
       {/* Hero Section */}
       <DarkSection>
         <HeroContainer>
           <HeroTitle>Descubro os Melhores Destinos e Eventos</HeroTitle>
           <HeroSubtitle>Explore pontos turísticos, eventos culturais e descubra os melhores lugares para visitar</HeroSubtitle>
-          
+
           <ActionButtons>
             <ButtonPrimary onClick={() => navigate('/eventos')}>
               <Calendar size={18} />
@@ -294,13 +295,13 @@ function HomePage() {
             </TitleWithIcon>
             <SectionSubtitle>Os eventos mais populares da cidade</SectionSubtitle>
           </SectionHeader>
-          
+
           <CardsGrid>
             {isLoadingEvents ? (
               <LoadingMessage>Carregando eventos...</LoadingMessage>
             ) : upcomingEvents.length > 0 ? (
               upcomingEvents.map(event => (
-                <Card 
+                <Card
                   key={event.id}
                   image={event.image}
                   onClick={() => navigate(`/eventos/${event.id}`)}
@@ -308,11 +309,11 @@ function HomePage() {
                   <Card.Title>
                     {event.title}
                   </Card.Title>
-                  
+
                   <Card.Description>
                     {event.description}
                   </Card.Description>
-                  
+
                   <Card.Meta>
                     <Card.MetaItem icon={<Calendar size={14} />}>
                       {event.date}
@@ -327,7 +328,7 @@ function HomePage() {
                       {event.price}
                     </Card.MetaItem>
                   </Card.Meta>
-                  
+
                   <Card.Action onClick={() => navigate(`/eventos/${event.id}`)}>
                     Como Chegar
                   </Card.Action>
@@ -350,13 +351,13 @@ function HomePage() {
             </TitleWithIcon>
             <SectionSubtitle>Os lugares mais visitados e bem avaliados</SectionSubtitle>
           </SectionHeader>
-          
+
           <CardsGrid>
             {isLoadingPlaces ? (
               <LoadingMessage>Carregando pontos turísticos...</LoadingMessage>
             ) : touristPlaces.length > 0 ? (
               touristPlaces.map(place => (
-                <Card 
+                <Card
                   key={place.id}
                   image={place.image_url || '/default-place.png'}
                   onClick={() => navigate(`/pontos-turisticos/${place.id}`)}
@@ -364,17 +365,17 @@ function HomePage() {
                   <Card.Title>
                     {place.name}
                   </Card.Title>
-                  
+
                   <Card.Description>
                     {place.description}
                   </Card.Description>
-                  
+
                   <Card.Meta>
                     <Card.MetaItem icon={<MapPin size={14} />}>
                       {place.location || 'Patos - PB'}
                     </Card.MetaItem>
                   </Card.Meta>
-                  
+
                   <Card.Action onClick={() => navigate(`/pontos-turisticos/${place.id}`)}>
                     Como Chegar
                   </Card.Action>
@@ -387,24 +388,8 @@ function HomePage() {
         </SectionContainer>
       </LightSection>
 
-      {/* CTA Section */}
-      <DarkSection>
-        <HeroContainer>
-          <HeroTitle>Planeje Sua Visita Perfeita</HeroTitle>
-          <HeroSubtitle>Descubra eventos próximos, encontre os melhores lugares para visitar e planeje sua viagem perfeita</HeroSubtitle>
-          
-          <ActionButtons>
-            <ButtonPrimary onClick={() => navigate('/eventos')}>
-              <Calendar size={18} />
-              Descubra Eventos
-            </ButtonPrimary>
-            <ButtonSecondary onClick={() => navigate('/avaliacoes')}>
-              <Eye size={18} />
-              Avaliar o Site
-            </ButtonSecondary>
-          </ActionButtons>
-        </HeroContainer>
-      </DarkSection>
+      {/* Footer */}
+      <Footer />
     </PageWrapper>
   );
 }
