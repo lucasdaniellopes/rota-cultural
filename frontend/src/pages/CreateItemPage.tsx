@@ -465,6 +465,34 @@ const DEFAULT_PLACE_CATEGORIES: PlaceCategory[] = [
   { id: 8, name: 'Museu', item_type: 'place' },
 ];
 
+// --- Mask Helpers ---
+const maskDate = (value: string) => {
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{2})(\d)/, '$1/$2')
+    .replace(/(\d{2})(\d)/, '$1/$2')
+    .replace(/(\d{4})\d+?$/, '$1');
+};
+
+const maskTime = (value: string) => {
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{2})(\d)/, '$1:$2')
+    .replace(/(\d{2})\d+?$/, '$1');
+};
+
+const formatDateToBackend = (date: string) => {
+  if (!date || date.length !== 10) return '';
+  const [day, month, year] = date.split('/');
+  return `${year}-${month}-${day}`;
+};
+
+const formatDateFromBackend = (date: string) => {
+  if (!date) return '';
+  const [year, month, day] = date.split('-');
+  return `${day}/${month}/${year}`;
+};
+
 function CreateItemPage({ type }: CreateItemPageProps) {
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
@@ -579,8 +607,8 @@ function CreateItemPage({ type }: CreateItemPageProps) {
           description: event.description,
           category: String(event.category),
           accessibility: event.accessibility || '',
-          start_date: event.start_date,
-          end_date: event.end_date,
+          start_date: formatDateFromBackend(event.start_date),
+          end_date: formatDateFromBackend(event.end_date),
           start_time: event.start_time.slice(0, 5),
           end_time: event.end_time.slice(0, 5),
           price: String(event.price),
@@ -762,19 +790,17 @@ function CreateItemPage({ type }: CreateItemPageProps) {
       }
 
       if (type === 'event') {
-        const startDateTime = `${formData.start_date}T${formData.start_time}:00`;
-        const endDateTime = `${formData.end_date}T${formData.end_time}:00`;
+        const startDateBackend = formatDateToBackend(formData.start_date);
+        const endDateBackend = formatDateToBackend(formData.end_date);
+
+        const startDateTime = `${startDateBackend}T${formData.start_time}:00`;
+        const endDateTime = `${endDateBackend}T${formData.end_time}:00`;
+
         formDataToSend.append('start_date', startDateTime);
         formDataToSend.append('end_date', endDateTime);
         formDataToSend.append('start_time', `${formData.start_time}:00`);
         formDataToSend.append('end_time', `${formData.end_time}:00`);
         formDataToSend.append('price', formData.price);
-
-        // Debug: log what we're sending
-        console.log('Sending event data:');
-        for (let pair of formDataToSend.entries()) {
-          console.log(pair[0] + ': ' + pair[1]);
-        }
 
         if (isEditing) {
           await eventsService.updateEvent(parseInt(id!), formDataToSend as any);
@@ -784,12 +810,6 @@ function CreateItemPage({ type }: CreateItemPageProps) {
       } else {
         formDataToSend.append('opening_time', `${formData.opening_time}:00`);
         formDataToSend.append('closing_time', `${formData.closing_time}:00`);
-
-        // Debug: log what we're sending
-        console.log('Sending place data:');
-        for (let pair of formDataToSend.entries()) {
-          console.log(pair[0] + ': ' + pair[1]);
-        }
 
         if (isEditing) {
           await placesService.updateTouristSpot(parseInt(id!), formDataToSend as any);
@@ -916,21 +936,21 @@ function CreateItemPage({ type }: CreateItemPageProps) {
               <FormRow>
                 <FormGroup>
                   <Label htmlFor="start_date">Data de Início *</Label>
-                  <Input id="start_date" type="date" value={formData.start_date} onChange={(e) => setFormData({ ...formData, start_date: e.target.value })} disabled={isLoading} />
+                  <Input id="start_date" type="text" placeholder="DD/MM/AAAA" maxLength={10} value={formData.start_date} onChange={(e) => setFormData({ ...formData, start_date: maskDate(e.target.value) })} disabled={isLoading} />
                 </FormGroup>
                 <FormGroup>
                   <Label htmlFor="end_date">Data de Término *</Label>
-                  <Input id="end_date" type="date" value={formData.end_date} onChange={(e) => setFormData({ ...formData, end_date: e.target.value })} disabled={isLoading} />
+                  <Input id="end_date" type="text" placeholder="DD/MM/AAAA" maxLength={10} value={formData.end_date} onChange={(e) => setFormData({ ...formData, end_date: maskDate(e.target.value) })} disabled={isLoading} />
                 </FormGroup>
               </FormRow>
               <FormRow>
                 <FormGroup>
                   <Label htmlFor="start_time">Horário de Início *</Label>
-                  <Input id="start_time" type="time" value={formData.start_time} onChange={(e) => setFormData({ ...formData, start_time: e.target.value })} disabled={isLoading} />
+                  <Input id="start_time" type="text" placeholder="HH:MM" maxLength={5} value={formData.start_time} onChange={(e) => setFormData({ ...formData, start_time: maskTime(e.target.value) })} disabled={isLoading} />
                 </FormGroup>
                 <FormGroup>
                   <Label htmlFor="end_time">Horário de Término *</Label>
-                  <Input id="end_time" type="time" value={formData.end_time} onChange={(e) => setFormData({ ...formData, end_time: e.target.value })} disabled={isLoading} />
+                  <Input id="end_time" type="text" placeholder="HH:MM" maxLength={5} value={formData.end_time} onChange={(e) => setFormData({ ...formData, end_time: maskTime(e.target.value) })} disabled={isLoading} />
                 </FormGroup>
               </FormRow>
             </Section>
@@ -943,11 +963,11 @@ function CreateItemPage({ type }: CreateItemPageProps) {
               <FormRow>
                 <FormGroup>
                   <Label htmlFor="opening_time">Horário de Abertura *</Label>
-                  <Input id="opening_time" type="time" value={formData.opening_time} onChange={(e) => setFormData({ ...formData, opening_time: e.target.value })} disabled={isLoading} />
+                  <Input id="opening_time" type="text" placeholder="HH:MM" maxLength={5} value={formData.opening_time} onChange={(e) => setFormData({ ...formData, opening_time: maskTime(e.target.value) })} disabled={isLoading} />
                 </FormGroup>
                 <FormGroup>
                   <Label htmlFor="closing_time">Horário de Fechamento *</Label>
-                  <Input id="closing_time" type="time" value={formData.closing_time} onChange={(e) => setFormData({ ...formData, closing_time: e.target.value })} disabled={isLoading} />
+                  <Input id="closing_time" type="text" placeholder="HH:MM" maxLength={5} value={formData.closing_time} onChange={(e) => setFormData({ ...formData, closing_time: maskTime(e.target.value) })} disabled={isLoading} />
                 </FormGroup>
               </FormRow>
             </Section>

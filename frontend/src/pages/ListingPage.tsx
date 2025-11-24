@@ -284,6 +284,8 @@ function ListingPage({ type }: ListingPageProps) {
   };
 
   useEffect(() => {
+    setItems([]);
+    setCategories(['Todas Categorias']);
     loadItems();
     loadCategories();
   }, [type]);

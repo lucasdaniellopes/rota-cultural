@@ -128,7 +128,7 @@ export const placesService = {
 
   async getCategories(): Promise<Category[]> {
     const response = await api.get('/categories/', {
-      params: { item_type: 'place' }
+      params: { item_type: 'tourist_spot' }
     });
     return response.data.results || response.data;
   }
