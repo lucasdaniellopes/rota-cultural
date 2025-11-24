@@ -21,7 +21,10 @@ class ReviewSerializer(serializers.ModelSerializer):
         return str(obj.reviewable) if obj.reviewable else 'Rota Cultural'
 
     def get_user_name(self, obj):
-        return obj.user.username if obj.user else 'Anonymous'
+        if obj.user:
+            full_name = obj.user.get_full_name()
+            return full_name if full_name else obj.user.first_name or obj.user.username
+        return 'Anonymous'
 
     def validate_rating(self, value):
         if value < 1 or value > 5:
@@ -57,7 +60,7 @@ class ReviewListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = [
-            'id', 'user_name', 'reviewable_type', 'reviewable_name',
+            'id', 'user', 'user_name', 'reviewable_type', 'reviewable_name',
             'object_id', 'title', 'rating', 'comment', 'helpful_count', 'created_at', 'is_helpful'
         ]
         read_only_fields = ['id', 'created_at']
@@ -69,7 +72,10 @@ class ReviewListSerializer(serializers.ModelSerializer):
         return str(obj.reviewable) if obj.reviewable else 'Rota Cultural'
 
     def get_user_name(self, obj):
-        return obj.user.username if obj.user else 'Anonymous'
+        if obj.user:
+            full_name = obj.user.get_full_name()
+            return full_name if full_name else obj.user.first_name or obj.user.username
+        return 'Anonymous'
 
     def get_is_helpful(self, obj):
         user = self.context.get('request').user

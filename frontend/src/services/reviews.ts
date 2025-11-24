@@ -2,6 +2,7 @@ import { api } from './api';
 
 export interface Review {
   id: number;
+  user: number;
   user_name: string;
   reviewable_type: string;
   reviewable_name: string;
@@ -31,6 +32,15 @@ export const reviewsService = {
   async createReview(data: ReviewCreate): Promise<Review> {
     const response = await api.post('/reviews/', data);
     return response.data;
+  },
+
+  async updateReview(id: number, data: Partial<ReviewCreate>): Promise<Review> {
+    const response = await api.put(`/reviews/${id}/`, data);
+    return response.data;
+  },
+
+  async deleteReview(id: number): Promise<void> {
+    await api.delete(`/reviews/${id}/`);
   },
 
   async markHelpful(reviewId: number): Promise<{ status: string; helpful_count: number }> {

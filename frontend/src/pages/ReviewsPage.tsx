@@ -1,5 +1,5 @@
 import styled, { keyframes } from 'styled-components';
-import { Star, ThumbsUp, User, Calendar, Loader, AlertTriangle, PenLine } from 'lucide-react';
+import { Star, ThumbsUp, User, Calendar, Loader, AlertTriangle, PenLine, Edit, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -427,7 +427,7 @@ const CenterState = styled.div`
 
 function ReviewsPage() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -439,6 +439,8 @@ function ReviewsPage() {
   });
 
   const [showForm, setShowForm] = useState(false);
+  const [editingReview, setEditingReview] = useState<Review | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [sortBy, setSortBy] = useState<'recent' | 'helpful' | 'rating'>('recent');
   const [helpfulReviews, setHelpfulReviews] = useState<Set<number>>(new Set());
 
@@ -462,6 +464,29 @@ function ReviewsPage() {
       setError('Falha ao carregar avaliações.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleEdit = (review: Review) => {
+    setEditingReview(review);
+    setNewReview({
+      title: review.title,
+      comment: review.comment,
+      rating: review.rating,
+    });
+    setIsEditing(true);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (reviewId: number) => {
+    if (!confirm('Tem certeza que deseja excluir esta avaliação?')) return;
+
+    try {
+      await reviewsService.deleteReview(reviewId);
+      setReviews(reviews.filter(r => r.id !== reviewId));
+    } catch (err) {
+      console.error('Error deleting review:', err);
+      alert('Erro ao excluir avaliação. Tente novamente.');
     }
   };
 
@@ -491,19 +516,29 @@ function ReviewsPage() {
     }
 
     try {
-      const createdReview = await reviewsService.createReview({
-        title: newReview.title,
-        comment: newReview.comment,
-        rating: newReview.rating,
-        content_type: null, 
-        object_id: null,
-      });
-
-      setReviews([createdReview, ...reviews]);
+      if (isEditing && editingReview) {
+        const updatedReview = await reviewsService.updateReview(editingReview.id, {
+          title: newReview.title,
+          comment: newReview.comment,
+          rating: newReview.rating,
+        });
+        setReviews(reviews.map(r => r.id === editingReview.id ? updatedReview : r));
+        setEditingReview(null);
+        setIsEditing(false);
+      } else {
+        const createdReview = await reviewsService.createReview({
+          title: newReview.title,
+          comment: newReview.comment,
+          rating: newReview.rating,
+          content_type: null, 
+          object_id: null,
+        });
+        setReviews([createdReview, ...reviews]);
+      }
       setNewReview({ title: '', comment: '', rating: 5 });
       setShowForm(false);
     } catch (err) {
-      console.error('Error creating review:', err);
+      console.error('Error submitting review:', err);
       alert('Erro ao enviar avaliação. Tente novamente.');
     }
   };
@@ -625,7 +660,7 @@ function ReviewsPage() {
                   </WriteReviewButton>
                 ) : (
                   <DarkCard>
-                    <FormTitle>Sua Avaliação</FormTitle>
+                    <FormTitle>{isEditing ? 'Editar Avaliação' : 'Sua Avaliação'}</FormTitle>
                     <form onSubmit={handleSubmitReview}>
                       <FormGroup>
                         <Label>Classificação</Label>
@@ -667,11 +702,16 @@ function ReviewsPage() {
                       </FormGroup>
 
                       <FormActions>
-                        <CancelButton type="button" onClick={() => setShowForm(false)}>
+                        <CancelButton type="button" onClick={() => {
+                          setShowForm(false);
+                          setEditingReview(null);
+                          setIsEditing(false);
+                          setNewReview({ title: '', comment: '', rating: 5 });
+                        }}>
                           Cancelar
                         </CancelButton>
                         <SubmitButton type="submit">
-                          Enviar Avaliação
+                          {isEditing ? 'Atualizar Avaliação' : 'Enviar Avaliação'}
                         </SubmitButton>
                       </FormActions>
                     </form>
@@ -716,7 +756,7 @@ function ReviewsPage() {
                       <ReviewTitle>{review.title}</ReviewTitle>
                       <ReviewComment>{review.comment}</ReviewComment>
 
-                      <div>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         <HelpfulButton 
                           $active={helpfulReviews.has(review.id)}
                           onClick={() => toggleHelpful(review.id)}
@@ -724,6 +764,28 @@ function ReviewsPage() {
                           <ThumbsUp size={14} />
                           Útil ({review.helpful_count || 0})
                         </HelpfulButton>
+                        {user && user.id === review.user && (
+                          <>
+                            <HelpfulButton 
+                              as="button"
+                              $active={false}
+                              onClick={() => handleEdit(review)}
+                              style={{ backgroundColor: '#f0f0f0', borderColor: '#0052cc', color: '#0052cc' }}
+                            >
+                              <Edit size={14} />
+                              Editar
+                            </HelpfulButton>
+                            <HelpfulButton 
+                              as="button"
+                              $active={false}
+                              onClick={() => handleDelete(review.id)}
+                              style={{ backgroundColor: '#fee2e2', borderColor: '#ef4444', color: '#ef4444' }}
+                            >
+                              <Trash2 size={14} />
+                              Excluir
+                            </HelpfulButton>
+                          </>
+                        )}
                       </div>
                     </ReviewCard>
                   ))
