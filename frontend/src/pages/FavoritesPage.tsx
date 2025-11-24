@@ -1,5 +1,5 @@
 import styled, { keyframes, css } from 'styled-components';
-import { Heart, MapPin, Calendar, Clock, ArrowRight, AlertTriangle, Loader, Trash2 } from 'lucide-react';
+import { MapPin, Calendar, Clock, ArrowRight, AlertTriangle, Loader, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -41,57 +41,7 @@ const PageWrapper = styled.div`
 `;
 
 // Header
-const HeaderSection = styled.header`
-  background-color: #ffffff;
-  padding: 3rem 1.5rem 2rem 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-`;
 
-const HeaderContainer = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-
-  @media (max-width: 600px) {
-    flex-direction: column;
-    text-align: center;
-  }
-`;
-
-const HeaderIconWrapper = styled.div`
-  width: 64px;
-  height: 64px;
-  background-color: rgba(239, 68, 68, 0.1); /* Vermelho bem suave */
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  svg {
-    color: #ef4444;
-    fill: #ef4444;
-  }
-`;
-
-const HeaderContent = styled.div`
-  flex: 1;
-`;
-
-const PageTitle = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
-  color: #141414;
-  margin: 0 0 0.5rem 0;
-`;
-
-const PageSubtitle = styled.p`
-  font-size: 1rem;
-  color: #6b7280;
-  margin: 0;
-`;
 
 // Filters / Tabs
 const FilterBar = styled.div`
@@ -370,7 +320,7 @@ function FavoritesPage() {
       setIsLoading(true);
       setError(null);
       const favs = await favoritesService.getFavorites();
-      
+
       // Enrich favorites with full object data
       const enrichedFavs = await Promise.all(
         favs.map(async (fav) => {
@@ -419,7 +369,7 @@ function FavoritesPage() {
 
   const handleRemoveFavorite = async (id: number) => {
     if (!window.confirm('Tem certeza que deseja remover este item dos favoritos?')) return;
-    
+
     try {
       await favoritesService.removeFavorite(id);
       setFavorites(favorites.filter(fav => fav.id !== id));
@@ -441,37 +391,23 @@ function FavoritesPage() {
   return (
     <PageWrapper>
       <Navbar />
-      
-      <HeaderSection>
-        <HeaderContainer>
-          <HeaderIconWrapper>
-            <Heart size={32} />
-          </HeaderIconWrapper>
-          <HeaderContent>
-            <PageTitle>Meus Favoritos</PageTitle>
-            <PageSubtitle>
-              Gerencie os eventos e locais que você salvou.
-            </PageSubtitle>
-          </HeaderContent>
-        </HeaderContainer>
-      </HeaderSection>
 
       <FilterBar>
         <FilterContainer>
-          <TabButton 
-            $active={activeTab === 'all'} 
+          <TabButton
+            $active={activeTab === 'all'}
             onClick={() => setActiveTab('all')}
           >
             Todos ({favorites.length})
           </TabButton>
-          <TabButton 
-            $active={activeTab === 'places'} 
+          <TabButton
+            $active={activeTab === 'places'}
             onClick={() => setActiveTab('places')}
           >
             Pontos Turísticos ({placesCount})
           </TabButton>
-          <TabButton 
-            $active={activeTab === 'events'} 
+          <TabButton
+            $active={activeTab === 'events'}
             onClick={() => setActiveTab('events')}
           >
             Eventos ({eventsCount})
@@ -493,15 +429,15 @@ function FavoritesPage() {
             </LoadingState>
           ) : filteredFavorites.length === 0 ? (
             <EmptyState>
-              <Heart size={64} color="#444" />
+              <MapPin size={64} color="#444" />
               <EmptyTitle>
-                {activeTab === 'all' ? 'Nenhum favorito ainda' : 
-                 activeTab === 'places' ? 'Nenhum local salvo' : 'Nenhum evento salvo'}
+                {activeTab === 'all' ? 'Nenhum favorito ainda' :
+                  activeTab === 'places' ? 'Nenhum local salvo' : 'Nenhum evento salvo'}
               </EmptyTitle>
               <EmptyText>
                 Explore a plataforma para encontrar eventos incríveis e pontos turísticos inesquecíveis.
               </EmptyText>
-              <ExploreButton 
+              <ExploreButton
                 onClick={() => navigate(activeTab === 'events' ? '/eventos' : '/pontos-turisticos')}
               >
                 Explorar {activeTab === 'events' ? 'Eventos' : 'Destinos'}
@@ -515,18 +451,18 @@ function FavoritesPage() {
                     <CardBadge>
                       {favorite.type === 'event' ? 'Evento' : 'Ponto Turístico'}
                     </CardBadge>
-                    <RemoveButton 
+                    <RemoveButton
                       onClick={() => handleRemoveFavorite(favorite.id)}
                       title="Remover"
                     >
                       <Trash2 size={18} />
                     </RemoveButton>
                   </CardImage>
-                  
+
                   <CardBody>
                     <CardTitle>{favorite.title}</CardTitle>
                     <CardDescription>{favorite.description}</CardDescription>
-                    
+
                     <MetaList>
                       <MetaItem>
                         <MapPin size={14} /> {favorite.location}

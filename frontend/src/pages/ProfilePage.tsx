@@ -19,18 +19,18 @@ import Navbar from '../components/Navbar';
 // --- Light Theme Constants ---
 const theme = {
   colors: {
-    bg: '#ffffff',         // Fundo branco da página
-    surface: '#f9fafb',    // Fundo leve dos cartões
+    bg: '#f8f8f8',         // Fundo cinza claro (igual CreateItemPage)
+    surface: '#ffffff',    // Fundo branco dos cartões
     surfaceHover: '#f3f4f6',
-    primary: '#3b82f6',    // Azul
-    primaryHover: '#2563eb',
+    primary: '#1a1a1a',    // Botões escuros (mantido)
+    primaryHover: '#2d2d2d',
     danger: '#ef4444',
     text: {
-      primary: '#1f2937',  // Preto/cinza escuro
+      primary: '#1f2937',  // Texto escuro
       secondary: '#6b7280', // Cinza médio
-      muted: '#9ca3af',     // Cinza claro
+      muted: '#9ca3af',
     },
-    border: '#e5e7eb',     // Bordas cinzas claras
+    border: '#e5e7eb',     // Bordas claras
     inputBg: '#ffffff',    // Fundo branco dos inputs
   },
   radius: '8px',
@@ -141,9 +141,6 @@ const TabsContainer = styled.div`
 `;
 
 const Tab = styled.button<{ $active: boolean }>`
-  background: ${props => props.$active ? theme.colors.surface : 'transparent'};
-  color: ${props => props.$active ? theme.colors.primary : theme.colors.text.secondary};
-  border: 1px solid ${props => props.$active ? theme.colors.border : 'transparent'};
   padding: 0.75rem 1.25rem;
   border-radius: 2rem;
   font-weight: 600;
@@ -154,11 +151,20 @@ const Tab = styled.button<{ $active: boolean }>`
   align-items: center;
   gap: 0.5rem;
   white-space: nowrap;
+  ${props => props.$active ? css`
+          background-color: #1a1a1a;
+          color: #ffffff;
+          border: 1px solid #1a1a1a;
+        ` : css`
+          background-color: transparent;
+          color: #6b7280;
+          border: 1px solid #e5e7eb;
 
-  &:hover {
-    color: ${props => props.$active ? theme.colors.primary : theme.colors.text.primary};
-    background: ${props => !props.$active && theme.colors.surfaceHover};
-  }
+          &:hover {
+            border-color: #9ca3af;
+            color: #141414;
+          }
+        `}
 `;
 
 // Área de Conteúdo (Cartão Dark)
@@ -213,7 +219,7 @@ const Input = styled.input`
   &:focus {
     outline: none;
     border-color: ${theme.colors.primary};
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 2px rgba(20, 20, 20, 0.1);
   }
 
   &:disabled {
@@ -258,9 +264,9 @@ const Button = styled.button<{ $variant?: 'primary' | 'danger' | 'outline' }>`
         `;
       default: // primary
         return css`
-          background-color: ${theme.colors.primary};
+          background-color: #1a1a1a;
           color: white;
-          &:hover { background-color: ${theme.colors.primaryHover}; }
+          &:hover { background-color: #2d2d2d; }
         `;
     }
   }}
@@ -284,7 +290,7 @@ const Notification = styled.div<{ $type: 'success' | 'error' }>`
   bottom: 20px;
   right: 20px;
   background-color: #ffffff;
-  border-left: 4px solid ${props => props.$type === 'success' ? theme.colors.primary : theme.colors.danger};
+  border-left: 4px solid ${props => props.$type === 'success' ? '#4caf50' : theme.colors.danger};
   color: ${theme.colors.text.primary};
   padding: 1rem 1.5rem;
   border-radius: 4px;
@@ -296,7 +302,7 @@ const Notification = styled.div<{ $type: 'success' | 'error' }>`
   animation: ${fadeIn} 0.3s;
 
   svg {
-    color: ${props => props.$type === 'success' ? theme.colors.primary : theme.colors.danger};
+    color: ${props => props.$type === 'success' ? '#4caf50' : theme.colors.danger};
   }
 `;
 
@@ -312,7 +318,6 @@ function ProfilePage() {
   // States for forms
   const [formData, setFormData] = useState({
     full_name: '',
-    last_name: '',
     email: '',
   });
   const [passData, setPassData] = useState({
@@ -327,7 +332,6 @@ function ProfilePage() {
     if (user) {
       setFormData({
         full_name: user.full_name || '',
-        last_name: user.last_name || '',
         email: user.email || '',
       });
       setAvatarPreview(user.avatar || null);
@@ -366,7 +370,6 @@ function ProfilePage() {
     try {
       await api.patch('/users/me_update/', {
         full_name: formData.full_name,
-        last_name: formData.last_name,
         email: formData.email !== user?.email ? formData.email : undefined
       });
       await refreshUser();
@@ -383,7 +386,7 @@ function ProfilePage() {
     if (passData.new !== passData.confirm) {
       return showFeedback('As novas senhas não coincidem.', 'error');
     }
-    
+
     setIsLoading(true);
     try {
       await api.post('/users/me_change_password/', {
@@ -420,20 +423,24 @@ function ProfilePage() {
     <Wrapper>
       <Navbar />
       <Container>
-        
+
         {/* Header Fixo */}
         <ProfileHeader>
           <AvatarWrapper>
-            <img src={avatarPreview || "https://via.placeholder.com/150"} alt="Avatar" />
+            {avatarPreview ? (
+              <img src={avatarPreview} alt="Avatar" />
+            ) : (
+              <User size={100} color="#9ca3af" />
+            )}
             <AvatarUploadButton htmlFor="avatar-upload">
               <Camera size={16} />
             </AvatarUploadButton>
-            <input 
-              id="avatar-upload" 
-              type="file" 
-              hidden 
+            <input
+              id="avatar-upload"
+              type="file"
+              hidden
               accept="image/*"
-              onChange={handleAvatarChange} 
+              onChange={handleAvatarChange}
             />
           </AvatarWrapper>
           <UserInfo>
@@ -444,20 +451,20 @@ function ProfilePage() {
 
         {/* Navegação por Abas */}
         <TabsContainer>
-          <Tab 
-            $active={activeTab === 'general'} 
+          <Tab
+            $active={activeTab === 'general'}
             onClick={() => setActiveTab('general')}
           >
             <User size={18} /> Dados Pessoais
           </Tab>
-          <Tab 
-            $active={activeTab === 'security'} 
+          <Tab
+            $active={activeTab === 'security'}
             onClick={() => setActiveTab('security')}
           >
             <Shield size={18} /> Segurança
           </Tab>
-          <Tab 
-            $active={activeTab === 'danger'} 
+          <Tab
+            $active={activeTab === 'danger'}
             onClick={() => setActiveTab('danger')}
           >
             <AlertTriangle size={18} /> Zona de Perigo
@@ -469,30 +476,23 @@ function ProfilePage() {
           <ContentCard>
             <CardTitle>Informações Básicas</CardTitle>
             <CardDescription>Atualize suas informações pessoais e endereço de e-mail.</CardDescription>
-            
+
             <form onSubmit={handleUpdateProfile}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
                 <FormGroup>
-                  <label>Nome</label>
-                  <Input 
-                    value={formData.full_name} 
-                    onChange={e => setFormData({...formData, full_name: e.target.value})}
-                  />
-                </FormGroup>
-                <FormGroup>
-                  <label>Sobrenome</label>
-                  <Input 
-                    value={formData.last_name} 
-                    onChange={e => setFormData({...formData, last_name: e.target.value})}
+                  <label>Nome Completo</label>
+                  <Input
+                    value={formData.full_name}
+                    onChange={e => setFormData({ ...formData, full_name: e.target.value })}
                   />
                 </FormGroup>
               </div>
               <FormGroup>
                 <label>E-mail</label>
-                <Input 
+                <Input
                   type="email"
-                  value={formData.email} 
-                  onChange={e => setFormData({...formData, email: e.target.value})}
+                  value={formData.email}
+                  onChange={e => setFormData({ ...formData, email: e.target.value })}
                 />
               </FormGroup>
 
@@ -510,34 +510,34 @@ function ProfilePage() {
           <ContentCard>
             <CardTitle>Alterar Senha</CardTitle>
             <CardDescription>Mantenha sua conta segura usando uma senha forte.</CardDescription>
-            
+
             <form onSubmit={handleUpdatePassword}>
               <FormGroup>
                 <label>Senha Atual</label>
-                <Input 
+                <Input
                   type="password"
                   placeholder="••••••••"
                   value={passData.current}
-                  onChange={e => setPassData({...passData, current: e.target.value})}
+                  onChange={e => setPassData({ ...passData, current: e.target.value })}
                 />
               </FormGroup>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <FormGroup>
                   <label>Nova Senha</label>
-                  <Input 
+                  <Input
                     type="password"
                     placeholder="••••••••"
                     value={passData.new}
-                    onChange={e => setPassData({...passData, new: e.target.value})}
+                    onChange={e => setPassData({ ...passData, new: e.target.value })}
                   />
                 </FormGroup>
                 <FormGroup>
                   <label>Confirmar Nova Senha</label>
-                  <Input 
+                  <Input
                     type="password"
                     placeholder="••••••••"
                     value={passData.confirm}
-                    onChange={e => setPassData({...passData, confirm: e.target.value})}
+                    onChange={e => setPassData({ ...passData, confirm: e.target.value })}
                   />
                 </FormGroup>
               </div>
@@ -558,9 +558,9 @@ function ProfilePage() {
             <CardDescription>
               Esta ação irá remover permanentemente todos os seus dados. Digite seu e-mail <strong>({user.email})</strong> para confirmar.
             </CardDescription>
-            
+
             <FormGroup>
-              <Input 
+              <Input
                 placeholder={user.email}
                 value={deleteEmail}
                 onChange={e => setDeleteEmail(e.target.value)}
@@ -569,8 +569,8 @@ function ProfilePage() {
             </FormGroup>
 
             <ButtonGroup>
-              <Button 
-                $variant="danger" 
+              <Button
+                $variant="danger"
                 onClick={handleDeleteAccount}
                 disabled={deleteEmail !== user.email || isLoading}
               >

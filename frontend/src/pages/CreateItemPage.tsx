@@ -590,7 +590,12 @@ function CreateItemPage({ type }: CreateItemPageProps) {
       setIsSearchingLocation(true);
       try {
         const results = await geocodingService.search(query, 10, ['br']);
-        setLocationSearchResults(results);
+        // Filter results to Patos, PB (city or town matches "Patos")
+        const filtered = results.filter((result) => {
+          const city = result.address.city || result.address.town || '';
+          return city.toLowerCase().includes('patos');
+        });
+        setLocationSearchResults(filtered);
       } catch (err) {
         showNotification('Erro ao buscar localizações', 'error');
         setLocationSearchResults([]);
