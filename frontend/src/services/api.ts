@@ -102,17 +102,18 @@ api.interceptors.response.use(
 );
 
 export interface Location {
-    id: number;
-    name: string;
-    description: string;
-    latitude: number;
-    longitude: number;
-    created_at: string;
+  id: number | string;
+  name: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+  created_at?: string;
+  type?: 'event' | 'tourist_spot' | 'custom';
 }
 
 export const locationService = {
-    async getLocations(): Promise<Location[]> {
-        const response = await api.get('/locations/')
-        return Array.isArray(response.data) ? response.data : response.data.results || []
-    }
+  async getLocations(): Promise<Location[]> {
+    const response = await api.get('/locations/destinations/')
+    return Array.isArray(response.data) ? response.data : response.data.results || []
+  }
 }

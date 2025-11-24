@@ -330,7 +330,7 @@ function HomePage() {
                   </Card.Meta>
 
                   <Card.Action onClick={() => navigate(`/eventos/${event.id}`)}>
-                    Como Chegar
+                    Mais detalhes
                   </Card.Action>
                 </Card>
               ))
@@ -377,7 +377,7 @@ function HomePage() {
                   </Card.Meta>
 
                   <Card.Action onClick={() => navigate(`/pontos-turisticos/${place.id}`)}>
-                    Como Chegar
+                    Mais detalhes
                   </Card.Action>
                 </Card>
               ))
