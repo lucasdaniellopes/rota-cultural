@@ -7,9 +7,8 @@ import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
 import ListingPage from '@/pages/ListingPage';
-import TouristPlaceDetailPage from '@/pages/TouristPlaceDetailPage';
+import ItemDetailPage from '@/pages/ItemDetailPage';
 import CreateItemPage from '@/pages/CreateItemPage';
-import EventDetailPage from '@/pages/EventDetailPage';
 import FavoritesPage from '@/pages/FavoritesPage';
 import ReviewsPage from '@/pages/ReviewsPage';
 import HomePage from '@/pages/HomePage';
@@ -27,10 +26,10 @@ export default function App() {
           <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
           <Route path="/pontos-turisticos" element={<ListingPage type="places" />} />
           <Route path="/pontos-turisticos/criar" element={<PrivateRoute><CreateItemPage type="place" /></PrivateRoute>} />
-          <Route path="/pontos-turisticos/:id" element={<TouristPlaceDetailPage />} />
+          <Route path="/pontos-turisticos/:id" element={<ItemDetailPage type="place" />} />
           <Route path="/eventos" element={<ListingPage type="events" />} />
           <Route path="/eventos/criar" element={<PrivateRoute><CreateItemPage type="event" /></PrivateRoute>} />
-          <Route path="/eventos/:id" element={<EventDetailPage />} />
+          <Route path="/eventos/:id" element={<ItemDetailPage type="event" />} />
           <Route path="/favoritos" element={<PrivateRoute><FavoritesPage /></PrivateRoute>} />
           <Route path="/avaliacoes" element={<PrivateRoute><ReviewsPage /></PrivateRoute>} />
           <Route path="/perfil" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
