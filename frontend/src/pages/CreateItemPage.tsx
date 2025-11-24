@@ -1,6 +1,6 @@
 import styled, { css, keyframes } from 'styled-components';
 import { useState, useEffect, useRef, type FormEvent, type ChangeEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Calendar, MapPin, Save, XCircle, AlertTriangle, CheckCircle, Accessibility, Image as ImageIcon, Search, Clock } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { eventsService, type Category as EventCategory } from '@/services/events';
@@ -466,6 +466,8 @@ const DEFAULT_PLACE_CATEGORIES: PlaceCategory[] = [
 ];
 
 function CreateItemPage({ type }: CreateItemPageProps) {
+  const { id } = useParams<{ id: string }>();
+  const isEditing = !!id;
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [notification, setNotification] = useState<{ message: string, type: NotificationType } | null>(null);
@@ -484,10 +486,10 @@ function CreateItemPage({ type }: CreateItemPageProps) {
 
   // Configuration based on type
   const config = type === 'event' ? {
-    title: 'Criar Novo Evento',
-    subtitle: 'Preencha os dados do seu evento cultural',
+    title: isEditing ? 'Editar Evento' : 'Criar Novo Evento',
+    subtitle: isEditing ? 'Atualize os dados do seu evento' : 'Preencha os dados do seu evento cultural',
     returnPath: '/eventos',
-    successMessage: 'Evento criado com sucesso!',
+    successMessage: isEditing ? 'Evento atualizado com sucesso!' : 'Evento criado com sucesso!',
     labels: {
       name: 'Título do Evento',
       namePlaceholder: 'Ex: Festival de Música Popular',
@@ -501,10 +503,10 @@ function CreateItemPage({ type }: CreateItemPageProps) {
       hasOpeningHours: false
     }
   } : {
-    title: 'Criar Novo Ponto Turístico',
-    subtitle: 'Preencha os dados do ponto turístico',
+    title: isEditing ? 'Editar Ponto Turístico' : 'Criar Novo Ponto Turístico',
+    subtitle: isEditing ? 'Atualize os dados do ponto turístico' : 'Preencha os dados do ponto turístico',
     returnPath: '/pontos-turisticos',
-    successMessage: 'Ponto turístico criado com sucesso!',
+    successMessage: isEditing ? 'Ponto turístico atualizado com sucesso!' : 'Ponto turístico criado com sucesso!',
     labels: {
       name: 'Nome do Local',
       namePlaceholder: 'Ex: Igreja Nossa Senhora da Conceição',
@@ -541,26 +543,93 @@ function CreateItemPage({ type }: CreateItemPageProps) {
       return;
     }
     loadCategories();
-    // Reset form when type changes
-    setFormData(prev => ({
-      ...prev,
-      name: '',
-      description: '',
-      category: '',
-      accessibility: '',
-      start_date: '',
-      end_date: '',
-      start_time: '',
-      end_time: '',
-      price: '',
-      opening_time: '',
-      closing_time: '',
-    }));
-    setSelectedLocation(null);
-    setLocationSearch('');
-    setImageFile(null);
-    setImagePreview('');
-  }, [isAuthenticated, navigate, type]);
+
+    if (isEditing && id) {
+      loadDataForEdit();
+    } else {
+      // Reset form when type changes or switching to create mode
+      setFormData(prev => ({
+        ...prev,
+        name: '',
+        description: '',
+        category: '',
+        accessibility: '',
+        start_date: '',
+        end_date: '',
+        start_time: '',
+        end_time: '',
+        price: '',
+        opening_time: '',
+        closing_time: '',
+      }));
+      setSelectedLocation(null);
+      setLocationSearch('');
+      setImageFile(null);
+      setImagePreview('');
+    }
+  }, [isAuthenticated, navigate, type, id, isEditing]);
+
+  const loadDataForEdit = async () => {
+    try {
+      setIsLoading(true);
+      if (type === 'event') {
+        const event = await eventsService.getEventById(parseInt(id!));
+        setFormData({
+          name: event.name,
+          description: event.description,
+          category: String(event.category),
+          accessibility: event.accessibility || '',
+          start_date: event.start_date,
+          end_date: event.end_date,
+          start_time: event.start_time.slice(0, 5),
+          end_time: event.end_time.slice(0, 5),
+          price: String(event.price),
+          opening_time: '',
+          closing_time: '',
+        });
+        if (event.location_name) {
+          setSelectedLocation({
+            name: event.location_name,
+            latitude: event.latitude || 0,
+            longitude: event.longitude || 0
+          });
+          setLocationSearch(event.location_name);
+        }
+        if (event.image_url) setImagePreview(event.image_url);
+      } else {
+        const place = await placesService.getTouristSpotById(parseInt(id!));
+        setFormData({
+          name: place.name,
+          description: place.description,
+          category: String(place.category),
+          accessibility: place.accessibility || '',
+          start_date: '',
+          end_date: '',
+          start_time: '',
+          end_time: '',
+          price: '',
+          opening_time: place.opening_time.slice(0, 5),
+          closing_time: place.closing_time.slice(0, 5),
+        });
+        if (place.address) {
+          const locName = `${place.address.street}, ${place.address.number} - ${place.address.city}`;
+          setSelectedLocation({
+            name: locName,
+            latitude: place.address.latitude || 0,
+            longitude: place.address.longitude || 0
+          });
+          setLocationSearch(locName);
+        }
+        if (place.image_url) setImagePreview(place.image_url);
+      }
+    } catch (err) {
+      console.error('Error loading data for edit:', err);
+      showNotification('Erro ao carregar dados para edição', 'error');
+      navigate(config.returnPath);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const loadCategories = async () => {
     try {
@@ -707,7 +776,11 @@ function CreateItemPage({ type }: CreateItemPageProps) {
           console.log(pair[0] + ': ' + pair[1]);
         }
 
-        await eventsService.createEvent(formDataToSend as any);
+        if (isEditing) {
+          await eventsService.updateEvent(parseInt(id!), formDataToSend as any);
+        } else {
+          await eventsService.createEvent(formDataToSend as any);
+        }
       } else {
         formDataToSend.append('opening_time', `${formData.opening_time}:00`);
         formDataToSend.append('closing_time', `${formData.closing_time}:00`);
@@ -718,7 +791,11 @@ function CreateItemPage({ type }: CreateItemPageProps) {
           console.log(pair[0] + ': ' + pair[1]);
         }
 
-        await placesService.createTouristSpot(formDataToSend as any);
+        if (isEditing) {
+          await placesService.updateTouristSpot(parseInt(id!), formDataToSend as any);
+        } else {
+          await placesService.createTouristSpot(formDataToSend as any);
+        }
       }
 
       showNotification(config.successMessage, 'success', 2000);

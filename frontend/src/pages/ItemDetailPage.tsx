@@ -1,7 +1,7 @@
 import styled, { keyframes, css } from 'styled-components';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Clock, MapPin, DollarSign, Heart, ArrowLeft, Accessibility, AlertTriangle, Loader } from 'lucide-react';
+import { Calendar, Clock, MapPin, DollarSign, Heart, ArrowLeft, Accessibility, AlertTriangle, Loader, Edit, Trash2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { eventsService } from '@/services/events';
 import { placesService } from '@/services/places';
@@ -332,270 +332,314 @@ const BackButton = styled.button`
 // --- Types & Interfaces ---
 
 interface ItemDetailPageProps {
-    type: 'event' | 'place';
+  type: 'event' | 'place';
 }
 
 interface DisplayData {
-    id: number;
+  id: number;
+  title: string;
+  image_url?: string;
+  category_name?: string;
+  description: string;
+  accessibility?: string;
+  location_display: string;
+  organizer?: number;
+  infoItems: {
+    icon: React.ElementType;
+    label: string;
+    value: string;
+  }[];
+  extraSections?: {
     title: string;
-    image_url?: string;
-    category_name?: string;
-    description: string;
-    accessibility?: string;
-    location_display: string;
-    infoItems: {
-        icon: React.ElementType;
-        label: string;
-        value: string;
-    }[];
-    extraSections?: {
-        title: string;
-        content: string;
-    }[];
+    content: string;
+  }[];
 }
 
 // --- Component Logic ---
 
 function ItemDetailPage({ type }: ItemDetailPageProps) {
-    const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate();
-    const { isAuthenticated } = useAuth();
-    const [data, setData] = useState<DisplayData | null>(null);
-    const { isFavorited, toggleFavorite } = useFavorite(parseInt(id || '0'), type === 'event' ? 'event' : 'touristspot');
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
+  const [data, setData] = useState<DisplayData | null>(null);
+  const { isFavorited, toggleFavorite } = useFavorite(parseInt(id || '0'), type === 'event' ? 'event' : 'touristspot');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (id) {
-            loadData();
-        }
-    }, [id, type]);
+  useEffect(() => {
+    if (id) {
+      loadData();
+    }
+  }, [id, type]);
 
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('pt-BR');
-    };
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR');
+  };
 
-    const formatTime = (timeString: string) => {
-        return timeString.slice(0, 5); // HH:MM
-    };
+  const formatTime = (timeString: string) => {
+    return timeString.slice(0, 5); // HH:MM
+  };
 
-    const formatPrice = (price: number | string) => {
-        const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-        if (numPrice === 0) return 'Gratuito';
-        return `R$ ${numPrice.toFixed(2).replace('.', ',')}`;
-    };
+  const formatPrice = (price: number | string) => {
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    if (numPrice === 0) return 'Gratuito';
+    return `R$ ${numPrice.toFixed(2).replace('.', ',')}`;
+  };
 
-    const loadData = async () => {
-        try {
-            setIsLoading(true);
-            setError(null);
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-            if (type === 'event') {
-                const event = await eventsService.getEventById(parseInt(id!));
+      if (type === 'event') {
+        const event = await eventsService.getEventById(parseInt(id!));
 
-                setData({
-                    id: event.id!,
-                    title: event.name,
-                    image_url: event.image_url,
-                    category_name: event.category_name,
-                    description: event.description,
-                    accessibility: event.accessibility,
-                    location_display: event.location_name || 'Local não especificado',
-                    infoItems: [
-                        {
-                            icon: Calendar,
-                            label: 'Data Início',
-                            value: formatDate(event.start_date)
-                        },
-                        {
-                            icon: Clock,
-                            label: 'Horário',
-                            value: `${formatTime(event.start_time)} - ${formatTime(event.end_time)}`
-                        },
-                        {
-                            icon: DollarSign,
-                            label: 'Entrada',
-                            value: formatPrice(event.price)
-                        },
-                        {
-                            icon: MapPin,
-                            label: 'Local',
-                            value: event.location_name || 'Local não especificado'
-                        }
-                    ]
-                });
-            } else {
-                const place = await placesService.getTouristSpotById(parseInt(id!));
-                const addressDisplay = place.address
-                    ? `${place.address.street}, ${place.address.number} - ${place.address.city}`
-                    : 'Endereço não disponível';
-
-                const infoItems = [
-                    {
-                        icon: MapPin,
-                        label: 'Localização',
-                        value: place.address ? `${place.address.city} - ${place.address.state}` : 'Não especificada'
-                    }
-                ];
-
-                if (place.opening_time && place.closing_time) {
-                    infoItems.push({
-                        icon: Clock,
-                        label: 'Horário',
-                        value: `${formatTime(place.opening_time)} - ${formatTime(place.closing_time)}`
-                    });
-                }
-
-                // Add extra sections for places
-                const extraSections = [];
-                if (place.opening_time && place.closing_time) {
-                    extraSections.push({
-                        title: 'Horário de Funcionamento',
-                        content: `${formatTime(place.opening_time)} - ${formatTime(place.closing_time)}`
-                    });
-                }
-
-                setData({
-                    id: place.id!,
-                    title: place.name,
-                    image_url: undefined, // Places usually don't have a main image in the API response shown in previous files, but we can check
-                    category_name: place.category_name,
-                    description: place.description,
-                    accessibility: place.accessibility,
-                    location_display: addressDisplay,
-                    infoItems: infoItems,
-                    extraSections: extraSections
-                });
+        setData({
+          id: event.id!,
+          title: event.name,
+          image_url: event.image_url,
+          category_name: event.category_name,
+          description: event.description,
+          accessibility: event.accessibility,
+          location_display: event.location_name || 'Local não especificado',
+          organizer: event.organizer,
+          infoItems: [
+            {
+              icon: Calendar,
+              label: 'Data Início',
+              value: formatDate(event.start_date)
+            },
+            {
+              icon: Clock,
+              label: 'Horário',
+              value: `${formatTime(event.start_time)} - ${formatTime(event.end_time)}`
+            },
+            {
+              icon: DollarSign,
+              label: 'Entrada',
+              value: formatPrice(event.price)
+            },
+            {
+              icon: MapPin,
+              label: 'Local',
+              value: event.location_name || 'Local não especificado'
             }
+          ]
+        });
+      } else {
+        const place = await placesService.getTouristSpotById(parseInt(id!));
+        const addressDisplay = place.address
+          ? `${place.address.street}, ${place.address.number} - ${place.address.city}`
+          : 'Endereço não disponível';
 
-        } catch (err: any) {
-            console.error('Error loading item:', err);
-            setError(`Falha ao carregar ${type === 'event' ? 'evento' : 'ponto turístico'}. Tente novamente.`);
-        } finally {
-            setIsLoading(false);
+        const infoItems = [
+          {
+            icon: MapPin,
+            label: 'Localização',
+            value: place.address ? `${place.address.city} - ${place.address.state}` : 'Não especificada'
+          }
+        ];
+
+        if (place.opening_time && place.closing_time) {
+          infoItems.push({
+            icon: Clock,
+            label: 'Horário',
+            value: `${formatTime(place.opening_time)} - ${formatTime(place.closing_time)}`
+          });
         }
-    };
 
-    if (isLoading) {
-        return (
-            <PageWrapper>
-                <Navbar />
-                <CenterState>
-                    <LoaderIcon size={48} />
-                    <p>Carregando...</p>
-                </CenterState>
-            </PageWrapper>
-        );
+        // Add extra sections for places
+        const extraSections = [];
+        if (place.opening_time && place.closing_time) {
+          extraSections.push({
+            title: 'Horário de Funcionamento',
+            content: `${formatTime(place.opening_time)} - ${formatTime(place.closing_time)}`
+          });
+        }
+
+        setData({
+          id: place.id!,
+          title: place.name,
+          image_url: undefined, // Places usually don't have a main image in the API response shown in previous files, but we can check
+          category_name: place.category_name,
+          description: place.description,
+          accessibility: place.accessibility,
+          location_display: addressDisplay,
+          organizer: place.organizer,
+          infoItems: infoItems,
+          extraSections: extraSections
+        });
+      }
+
+    } catch (err: any) {
+      console.error('Error loading item:', err);
+      setError(`Falha ao carregar ${type === 'event' ? 'evento' : 'ponto turístico'}. Tente novamente.`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm('Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.')) {
+      return;
     }
 
-    if (error || !data) {
-        return (
-            <PageWrapper>
-                <Navbar />
-                <CenterState>
-                    <AlertTriangle size={48} />
-                    <h1>Item não encontrado</h1>
-                    <p>{error || 'O item que você procura não existe ou foi removido.'}</p>
-                    <BackButton onClick={() => navigate(type === 'event' ? '/eventos' : '/pontos-turisticos')}>
-                        <ArrowLeft size={18} /> Voltar para {type === 'event' ? 'Eventos' : 'Pontos Turísticos'}
-                    </BackButton>
-                </CenterState>
-            </PageWrapper>
-        );
+    try {
+      setIsLoading(true);
+      if (type === 'event') {
+        await eventsService.deleteEvent(data!.id);
+      } else {
+        await placesService.deleteTouristSpot(data!.id);
+      }
+      navigate(type === 'event' ? '/eventos' : '/pontos-turisticos');
+    } catch (err) {
+      console.error('Error deleting item:', err);
+      setError('Erro ao excluir item. Tente novamente.');
+      setIsLoading(false);
     }
+  };
 
+  if (isLoading) {
     return (
-        <PageWrapper>
-            <Navbar />
-
-            <HeroSection>
-                {data.image_url ? (
-                    <HeroImage src={data.image_url} alt={data.title} />
-                ) : (
-                    <HeroPlaceholder>
-                        <MapPin size={64} />
-                    </HeroPlaceholder>
-                )}
-                <BackButtonOverlay onClick={() => navigate(type === 'event' ? '/eventos' : '/pontos-turisticos')}>
-                    <ArrowLeft size={20} />
-                </BackButtonOverlay>
-            </HeroSection>
-
-            <Container>
-                <Header>
-                    <div>
-                        {data.category_name && <CategoryBadge>{data.category_name}</CategoryBadge>}
-                        <Title>{data.title}</Title>
-                    </div>
-                    <FavoriteButton
-                        $active={isFavorited}
-                        onClick={toggleFavorite}
-                        title={isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                        disabled={!isAuthenticated}
-                    >
-                        <Heart size={24} fill={isFavorited ? 'currentColor' : 'none'} />
-                    </FavoriteButton>
-                </Header>
-
-                <InfoGrid>
-                    {data.infoItems.map((item, index) => (
-                        <InfoItem key={index}>
-                            <item.icon size={20} />
-                            <div>
-                                <InfoLabel>{item.label}</InfoLabel>
-                                <InfoValue>{item.value}</InfoValue>
-                            </div>
-                        </InfoItem>
-                    ))}
-                </InfoGrid>
-
-                <Section>
-                    <h2>Sobre</h2>
-                    <Text>{data.description}</Text>
-                </Section>
-
-                {data.extraSections?.map((section, index) => (
-                    <Section key={index}>
-                        <h2>{section.title}</h2>
-                        <Text>{section.content}</Text>
-                    </Section>
-                ))}
-
-                {data.accessibility && (
-                    <Section>
-                        <SectionHeader>
-                            <Accessibility size={20} />
-                            <h2>Acessibilidade</h2>
-                        </SectionHeader>
-                        <Text>{data.accessibility}</Text>
-                    </Section>
-                )}
-
-                <Section>
-                    <h2>Localização</h2>
-                    <MapPlaceholder>
-                        <MapPin size={40} />
-                        <p>{data.location_display}</p>
-                        <MapButton onClick={() => navigate('/mapa')}>
-                            Ver no Mapa
-                        </MapButton>
-                    </MapPlaceholder>
-                </Section>
-
-                <CtaSection>
-                    <PrimaryButton onClick={() => navigate('/mapa')}>
-                        Como Chegar
-                    </PrimaryButton>
-                    {type === 'place' && (
-                        <SecondaryButton>
-                            Mais Informações
-                        </SecondaryButton>
-                    )}
-                </CtaSection>
-            </Container>
-        </PageWrapper>
+      <PageWrapper>
+        <Navbar />
+        <CenterState>
+          <LoaderIcon size={48} />
+          <p>Carregando...</p>
+        </CenterState>
+      </PageWrapper>
     );
+  }
+
+  if (error || !data) {
+    return (
+      <PageWrapper>
+        <Navbar />
+        <CenterState>
+          <AlertTriangle size={48} />
+          <h1>Item não encontrado</h1>
+          <p>{error || 'O item que você procura não existe ou foi removido.'}</p>
+          <BackButton onClick={() => navigate(type === 'event' ? '/eventos' : '/pontos-turisticos')}>
+            <ArrowLeft size={18} /> Voltar para {type === 'event' ? 'Eventos' : 'Pontos Turísticos'}
+          </BackButton>
+        </CenterState>
+      </PageWrapper>
+    );
+  }
+
+  return (
+    <PageWrapper>
+      <Navbar />
+
+      <HeroSection>
+        {data.image_url ? (
+          <HeroImage src={data.image_url} alt={data.title} />
+        ) : (
+          <HeroPlaceholder>
+            <MapPin size={64} />
+          </HeroPlaceholder>
+        )}
+        <BackButtonOverlay onClick={() => navigate(type === 'event' ? '/eventos' : '/pontos-turisticos')}>
+          <ArrowLeft size={20} />
+        </BackButtonOverlay>
+      </HeroSection>
+
+      <Container>
+        <Header>
+          <div>
+            {data.category_name && <CategoryBadge>{data.category_name}</CategoryBadge>}
+            <Title>{data.title}</Title>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {user && data.organizer === user.id && (
+              <>
+                <FavoriteButton
+                  $active={false}
+                  onClick={() => navigate(type === 'event' ? `/eventos/${id}/editar` : `/pontos-turisticos/${id}/editar`)}
+                  title="Editar"
+                >
+                  <Edit size={20} />
+                </FavoriteButton>
+                <FavoriteButton
+                  $active={false}
+                  onClick={handleDelete}
+                  title="Excluir"
+                  style={{ borderColor: '#ef4444', color: '#ef4444' }}
+                >
+                  <Trash2 size={20} />
+                </FavoriteButton>
+              </>
+            )}
+            <FavoriteButton
+              $active={isFavorited}
+              onClick={toggleFavorite}
+              title={isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+              disabled={!isAuthenticated}
+            >
+              <Heart size={24} fill={isFavorited ? 'currentColor' : 'none'} />
+            </FavoriteButton>
+          </div>
+        </Header>
+
+        <InfoGrid>
+          {data.infoItems.map((item, index) => (
+            <InfoItem key={index}>
+              <item.icon size={20} />
+              <div>
+                <InfoLabel>{item.label}</InfoLabel>
+                <InfoValue>{item.value}</InfoValue>
+              </div>
+            </InfoItem>
+          ))}
+        </InfoGrid>
+
+        <Section>
+          <h2>Sobre</h2>
+          <Text>{data.description}</Text>
+        </Section>
+
+        {data.extraSections?.map((section, index) => (
+          <Section key={index}>
+            <h2>{section.title}</h2>
+            <Text>{section.content}</Text>
+          </Section>
+        ))}
+
+        {data.accessibility && (
+          <Section>
+            <SectionHeader>
+              <Accessibility size={20} />
+              <h2>Acessibilidade</h2>
+            </SectionHeader>
+            <Text>{data.accessibility}</Text>
+          </Section>
+        )}
+
+        <Section>
+          <h2>Localização</h2>
+          <MapPlaceholder>
+            <MapPin size={40} />
+            <p>{data.location_display}</p>
+            <MapButton onClick={() => navigate('/mapa')}>
+              Ver no Mapa
+            </MapButton>
+          </MapPlaceholder>
+        </Section>
+
+        <CtaSection>
+          <PrimaryButton onClick={() => navigate('/mapa')}>
+            Como Chegar
+          </PrimaryButton>
+          {type === 'place' && (
+            <SecondaryButton>
+              Mais Informações
+            </SecondaryButton>
+          )}
+        </CtaSection>
+      </Container>
+    </PageWrapper>
+  );
 }
 
 export default ItemDetailPage;

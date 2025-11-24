@@ -27,6 +27,7 @@ export interface TouristSpot {
   location?: string;
   created_at?: string;
   updated_at?: string;
+  organizer?: number;
 }
 
 export interface TouristSpotListItem {
@@ -86,6 +87,17 @@ export const placesService = {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     return response.data;
+  },
+
+  async updateTouristSpot(id: number, data: FormData): Promise<TouristSpot> {
+    const response = await api.patch(`/tourist-spots/${id}/`, data, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
+  async deleteTouristSpot(id: number): Promise<void> {
+    await api.delete(`/tourist-spots/${id}/`);
   },
 
   async getTouristSpotsByCity(city: string): Promise<TouristSpotListItem[]> {
