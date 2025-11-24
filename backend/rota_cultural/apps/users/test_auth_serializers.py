@@ -22,8 +22,7 @@ class LoginSerializerTest(TestCase):
         self.user = User.objects.create_user(
             username="testuser",
             email="test@example.com",
-            first_name="Test",
-            last_name="User",
+            full_name="Test User",
             password="testpass123",
             is_tourist=True
         )
@@ -31,8 +30,7 @@ class LoginSerializerTest(TestCase):
         self.inactive_user = User.objects.create_user(
             username="inactiveuser",
             email="inactive@example.com",
-            first_name="Inactive",
-            last_name="User",
+            full_name="Inactive User",
             password="testpass123",
             is_tourist=False,
             is_active=False
@@ -143,8 +141,7 @@ class RegisterSerializerTest(TestCase):
         """Test serializer with valid registration data."""
         data = {
             "email": "newuser@example.com",
-            "first_name": "New",
-            "last_name": "User",
+            "full_name": "New User",
             "phone": "(83) 99999-9999",
             "birth_date": "1990-01-01",
             "is_tourist": True,
@@ -161,8 +158,7 @@ class RegisterSerializerTest(TestCase):
         """Test serializer with password mismatch."""
         data = {
             "email": "newuser@example.com",
-            "first_name": "New",
-            "last_name": "User",
+            "full_name": "New User",
             "password": "newpass123",
             "password_confirm": "differentpass123"
         }
@@ -183,8 +179,7 @@ class RegisterSerializerTest(TestCase):
 
         data = {
             "email": "existing@example.com",  # Duplicate
-            "first_name": "New",
-            "last_name": "User",
+            "full_name": "New User",
             "password": "newpass123",
             "password_confirm": "newpass123"
         }
@@ -200,7 +195,7 @@ class RegisterSerializerTest(TestCase):
         """Test serializer with weak password."""
         data = {
             "email": "newuser@example.com",
-            "first_name": "New",
+            "full_name": "New User",
             "last_name": "User",
             "password": "123",  # Too short
             "password_confirm": "123"
@@ -225,7 +220,7 @@ class RegisterSerializerTest(TestCase):
         """Test serializer with invalid email format."""
         data = {
             "email": "invalid-email-format",
-            "first_name": "New",
+            "full_name": "New User",
             "last_name": "User",
             "password": "newpass123",
             "password_confirm": "newpass123"
@@ -239,7 +234,7 @@ class RegisterSerializerTest(TestCase):
         """Test serializer with invalid birth date."""
         data = {
             "email": "newuser@example.com",
-            "first_name": "New",
+            "full_name": "New User",
             "last_name": "User",
             "birth_date": "invalid-date",
             "password": "newpass123",
@@ -254,7 +249,7 @@ class RegisterSerializerTest(TestCase):
         """Test serializer with optional fields omitted."""
         data = {
             "email": "newuser@example.com",
-            "first_name": "New",
+            "full_name": "New User",
             "last_name": "User",
             # phone, birth_date omitted
             "is_tourist": False,
@@ -270,7 +265,7 @@ class RegisterSerializerTest(TestCase):
         """Test that serializer creates user successfully."""
         data = {
             "email": "newuser@example.com",
-            "first_name": "New",
+            "full_name": "New User",
             "last_name": "User",
             "password": "newpass123",
             "password_confirm": "newpass123"
@@ -283,7 +278,7 @@ class RegisterSerializerTest(TestCase):
 
         assert user.username.startswith("user_")  # Username is auto-generated
         assert user.email == "newuser@example.com"
-        assert user.first_name == "New"
+        assert user.full_name == "New User"
         assert user.last_name == "User"
         assert user.check_password("newpass123")  # Password is hashed
         assert user.is_active  # Default value
@@ -341,8 +336,7 @@ class RegisterResponseSerializerTest(TestCase):
         self.user = User.objects.create_user(
             username="testuser",
             email="test@example.com",
-            first_name="Test",
-            last_name="User",
+            full_name="Test User",
             password="testpass123",
             is_tourist=True
         )
@@ -353,7 +347,7 @@ class RegisterResponseSerializerTest(TestCase):
             "id": self.user.id,
             "username": self.user.username,
             "email": self.user.email,
-            "first_name": self.user.first_name,
+            "full_name": self.user.full_name,
             "last_name": self.user.last_name,
             "is_tourist": self.user.is_tourist,
             "date_joined": self.user.date_joined
@@ -489,7 +483,7 @@ class UserSerializerAuthTest(TestCase):
         data = serializer.data
 
         # Should only include safe fields
-        expected_fields = {'id', 'username', 'email', 'first_name', 'last_name', 'is_tourist', 'date_joined'}
+        expected_fields = {'id', 'username', 'email', 'full_name', 'is_tourist', 'date_joined'}
         assert set(data.keys()) == expected_fields
 
         # Should not include sensitive fields

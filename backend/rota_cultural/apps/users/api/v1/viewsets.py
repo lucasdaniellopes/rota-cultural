@@ -19,7 +19,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['is_tourist', 'is_active']
-    search_fields = ['username', 'email', 'first_name', 'last_name']
+    search_fields = ['username', 'email', 'full_name']
     ordering_fields = ['date_joined', 'username', 'email']
     ordering = ['-date_joined']
 

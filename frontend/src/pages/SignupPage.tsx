@@ -250,8 +250,7 @@ const ErrorMessage = styled.div`
 `;
 
 interface SignupFormData {
-  first_name: string;
-  last_name: string;
+  full_name: string;
   email: string;
   password: string;
   password_confirm: string;
@@ -261,8 +260,7 @@ function SignupPage() {
   const navigate = useNavigate();
   const { signup, isLoading, error, clearError } = useAuth();
   const [formData, setFormData] = useState<SignupFormData>({
-    first_name: '',
-    last_name: '',
+    full_name: '',
     email: '',
     password: '',
     password_confirm: '',
@@ -281,8 +279,8 @@ function SignupPage() {
     setFormError('');
 
     // Validações básicas
-    if (!formData.first_name.trim()) {
-      setFormError('Nome é obrigatório');
+    if (!formData.full_name.trim()) {
+      setFormError('Nome completo é obrigatório');
       return;
     }
 
@@ -306,8 +304,7 @@ function SignupPage() {
         email: formData.email,
         password: formData.password,
         password_confirm: formData.password_confirm,
-        first_name: formData.first_name,
-        last_name: formData.last_name,
+        full_name: formData.full_name,
       });
       navigate('/');
     } catch (err: any) {
@@ -355,31 +352,17 @@ function SignupPage() {
             )}
 
             <Form.Field>
-              <Form.Label htmlFor="first_name">Nome</Form.Label>
+              <Form.Label htmlFor="full_name">Nome Completo</Form.Label>
               <Form.Input
-                id="first_name"
-                name="first_name"
+                id="full_name"
+                name="full_name"
                 type="text"
-                placeholder="Seu nome"
+                placeholder="Seu nome completo"
                 icon={<User size={20} />}
-                value={formData.first_name}
+                value={formData.full_name}
                 onChange={handleChange}
                 disabled={isLoading}
                 required
-              />
-            </Form.Field>
-
-            <Form.Field>
-              <Form.Label htmlFor="last_name">Sobrenome</Form.Label>
-              <Form.Input
-                id="last_name"
-                name="last_name"
-                type="text"
-                placeholder="Seu sobrenome"
-                icon={<User size={20} />}
-                value={formData.last_name}
-                onChange={handleChange}
-                disabled={isLoading}
               />
             </Form.Field>
 

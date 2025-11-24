@@ -255,8 +255,8 @@ function Navbar() {
 
         {isAuthenticated && user ? (
           <ActionButtons>
-            <FavoritesButton 
-              onClick={() => navigate('/favoritos')} 
+            <FavoritesButton
+              onClick={() => navigate('/favoritos')}
               $isActive={isActive('/favoritos')}
               title="Meus Favoritos"
             >
@@ -272,7 +272,7 @@ function Navbar() {
               >
                 <User size={20} />
                 <LabelText>
-                  {user.first_name || user.username}
+                  {user.full_name || user.username}
                 </LabelText>
                 <ChevronIconWrapper>
                   <ChevronDown size={16} />

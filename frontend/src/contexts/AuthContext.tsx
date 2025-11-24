@@ -12,8 +12,7 @@ export interface User {
   id: number;
   username: string;
   email: string;
-  first_name: string;
-  last_name: string;
+  full_name: string;
   is_tourist: boolean;
   date_joined: string;
   phone?: string;
@@ -26,8 +25,7 @@ export interface SignupData {
   email: string;
   password: string;
   password_confirm: string;
-  first_name?: string;
-  last_name?: string;
+  full_name?: string;
 }
 
 export interface LoginData {
@@ -117,8 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: data.email,
         password: data.password,
         password_confirm: data.password_confirm,
-        first_name: data.first_name || '',
-        last_name: data.last_name || '',
+        full_name: data.full_name || '',
       });
 
       // Extrair tokens da resposta do registro

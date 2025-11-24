@@ -4,6 +4,7 @@ import uuid
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
+    full_name = models.CharField(max_length=255, blank=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     birth_date = models.DateField(blank=True, null=True)
     is_tourist = models.BooleanField(default=True)
@@ -24,6 +25,13 @@ class User(AbstractUser):
         # Auto-generate username with UUID if not provided
         if not self.username:
             self.username = f"user_{uuid.uuid4().hex[:12]}"
+        
+        # Split full_name into first_name and last_name for Django compatibility
+        if self.full_name:
+            parts = self.full_name.strip().split(maxsplit=1)
+            self.first_name = parts[0] if parts else ''
+            self.last_name = parts[1] if len(parts) > 1 else ''
+        
         super().save(*args, **kwargs)
 
     def __str__(self):

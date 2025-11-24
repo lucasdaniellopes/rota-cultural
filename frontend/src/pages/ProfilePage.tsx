@@ -311,7 +311,7 @@ function ProfilePage() {
 
   // States for forms
   const [formData, setFormData] = useState({
-    first_name: '',
+    full_name: '',
     last_name: '',
     email: '',
   });
@@ -326,7 +326,7 @@ function ProfilePage() {
   useEffect(() => {
     if (user) {
       setFormData({
-        first_name: user.first_name || '',
+        full_name: user.full_name || '',
         last_name: user.last_name || '',
         email: user.email || '',
       });
@@ -365,7 +365,7 @@ function ProfilePage() {
     setIsLoading(true);
     try {
       await api.patch('/users/me_update/', {
-        first_name: formData.first_name,
+        full_name: formData.full_name,
         last_name: formData.last_name,
         email: formData.email !== user?.email ? formData.email : undefined
       });
@@ -437,7 +437,7 @@ function ProfilePage() {
             />
           </AvatarWrapper>
           <UserInfo>
-            <h1>{user.first_name} {user.last_name}</h1>
+            <h1>{user.full_name}</h1>
             <p>{user.email}</p>
           </UserInfo>
         </ProfileHeader>
@@ -475,8 +475,8 @@ function ProfilePage() {
                 <FormGroup>
                   <label>Nome</label>
                   <Input 
-                    value={formData.first_name} 
-                    onChange={e => setFormData({...formData, first_name: e.target.value})}
+                    value={formData.full_name} 
+                    onChange={e => setFormData({...formData, full_name: e.target.value})}
                   />
                 </FormGroup>
                 <FormGroup>

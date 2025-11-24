@@ -21,8 +21,7 @@ class AuthAPITest(APITestCase):
         self.user = User.objects.create_user(
             username="testuser",
             email="test@example.com",
-            first_name="Test",
-            last_name="User",
+            full_name="Test User",
             password="testpass123",
             is_tourist=True
         )
@@ -31,8 +30,7 @@ class AuthAPITest(APITestCase):
         self.inactive_user = User.objects.create_user(
             username="inactiveuser",
             email="inactive@example.com",
-            first_name="Inactive",
-            last_name="User",
+            full_name="Inactive User",
             password="testpass123",
             is_tourist=False,
             is_active=False
@@ -42,8 +40,7 @@ class AuthAPITest(APITestCase):
         """Test successful user registration."""
         data = {
             "email": "newuser@example.com",
-            "first_name": "New",
-            "last_name": "User",
+            "full_name": "New User",
             "phone": "(83) 99999-9999",
             "birth_date": "1990-01-01",
             "is_tourist": True,
@@ -63,8 +60,7 @@ class AuthAPITest(APITestCase):
         assert "username" in user_data  # Username is auto-generated
         assert user_data["username"].startswith("user_")  # Verify UUID format
         assert user_data["email"] == "newuser@example.com"
-        assert user_data["first_name"] == "New"
-        assert user_data["last_name"] == "User"
+        assert user_data["full_name"] == "New User"
         assert user_data["is_tourist"] is True
 
         # Verify user was created in database
@@ -74,8 +70,7 @@ class AuthAPITest(APITestCase):
         """Test registration failure when passwords don't match."""
         data = {
             "email": "newuser@example.com",
-            "first_name": "New",
-            "last_name": "User",
+            "full_name": "New User",
             "password": "newpass123",
             "password_confirm": "differentpass123"
         }
@@ -89,8 +84,7 @@ class AuthAPITest(APITestCase):
         """Test registration failure with duplicate email."""
         data = {
             "email": "test@example.com",  # Existing email
-            "first_name": "New",
-            "last_name": "User",
+            "full_name": "New User",
             "password": "newpass123",
             "password_confirm": "newpass123"
         }
@@ -106,8 +100,7 @@ class AuthAPITest(APITestCase):
         """Test registration failure with weak password."""
         data = {
             "email": "newuser@example.com",
-            "first_name": "New",
-            "last_name": "User",
+            "full_name": "New User",
             "password": "123",  # Too short
             "password_confirm": "123"
         }
@@ -343,19 +336,18 @@ class AuthSecurityTest(APITestCase):
 
     def test_large_data_handling_in_registration(self):
         """Test handling of unusually large data in registration."""
-        large_first_name = "a" * 200  # Exceeds model's max_length
+        large_full_name = "a" * 300  # Exceeds model's max_length
 
         data = {
             "email": "large@example.com",
-            "first_name": large_first_name,
-            "last_name": "User",
+            "full_name": large_full_name,
             "password": "newpass123",
             "password_confirm": "newpass123"
         }
 
         response = self.client.post(f"{self.base_url}register/", data)
 
-        # Should fail due to first_name length validation
+        # Should fail due to full_name length validation
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
@@ -381,8 +373,7 @@ class AuthIntegrationTest(APITestCase):
         # 1. Register new user
         register_data = {
             "email": "newuser@example.com",
-            "first_name": "New",
-            "last_name": "User",
+            "full_name": "New User",
             "is_tourist": True,
             "password": "newpass123",
             "password_confirm": "newpass123"
@@ -403,12 +394,12 @@ class AuthIntegrationTest(APITestCase):
 
         # 4. Update user profile
         update_data = {
-            "first_name": "Updated",
+            "full_name": "Updated Name",
             "bio": "This is my updated bio"
         }
         update_response = self.client.patch(f"{self.users_url}me_update/", update_data)
         assert update_response.status_code == status.HTTP_200_OK
-        assert update_response.data["first_name"] == "Updated"
+        assert update_response.data["full_name"] == "Updated Name"
         assert update_response.data["bio"] == "This is my updated bio"
 
         # 5. Logout
