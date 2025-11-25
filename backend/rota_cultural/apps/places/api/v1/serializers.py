@@ -38,6 +38,12 @@ class TouristSpotSerializer(serializers.ModelSerializer):
     address_name = serializers.CharField(required=False, write_only=True, allow_blank=True)
     latitude = serializers.DecimalField(max_digits=11, decimal_places=8, required=False, write_only=True)
     longitude = serializers.DecimalField(max_digits=12, decimal_places=8, required=False, write_only=True)
+    street = serializers.CharField(required=False, write_only=True, allow_blank=True)
+    number = serializers.CharField(required=False, write_only=True, allow_blank=True)
+    neighborhood = serializers.CharField(required=False, write_only=True, allow_blank=True)
+    city = serializers.CharField(required=False, write_only=True, allow_blank=True)
+    state = serializers.CharField(required=False, write_only=True, allow_blank=True)
+    postal_code = serializers.CharField(required=False, write_only=True, allow_blank=True)
 
     class Meta:
         model = TouristSpot
@@ -46,6 +52,7 @@ class TouristSpotSerializer(serializers.ModelSerializer):
             'accessibility', 'address', 'category', 'category_name',
             'organizer', 'organizer_name',
             'image', 'image_url', 'address_name', 'latitude', 'longitude',
+            'street', 'number', 'neighborhood', 'city', 'state', 'postal_code',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'organizer', 'created_at', 'updated_at']
@@ -68,19 +75,26 @@ class TouristSpotSerializer(serializers.ModelSerializer):
         address_name = validated_data.pop('address_name', None)
         latitude = validated_data.pop('latitude', None)
         longitude = validated_data.pop('longitude', None)
+        street = validated_data.pop('street', None)
+        number = validated_data.pop('number', None)
+        neighborhood = validated_data.pop('neighborhood', None)
+        city = validated_data.pop('city', None)
+        state = validated_data.pop('state', None)
+        postal_code = validated_data.pop('postal_code', None)
 
         # Se coordenadas forem fornecidas, criar endereço
         if latitude and longitude:
             # Criar Point com coordenadas (longitude, latitude)
             point = Point(float(longitude), float(latitude), srid=4326)
             
+            # Usar dados do Nominatim se disponíveis, senão usar valores padrão
             address = Address.objects.create(
-                street=address_name or 'Endereço',
-                number='S/N',
-                neighborhood='Centro',
-                city='Patos',
-                state='PB',
-                postal_code='58700-000',
+                street=street or address_name or 'Endereço',
+                number=number or 'S/N',
+                neighborhood=neighborhood or 'Centro',
+                city=city or 'Patos',
+                state=state or 'PB',
+                postal_code=postal_code or '58700-000',
                 point=point
             )
             
@@ -88,6 +102,52 @@ class TouristSpotSerializer(serializers.ModelSerializer):
 
         tourist_spot = TouristSpot.objects.create(**validated_data)
         return tourist_spot
+
+    def update(self, instance, validated_data):
+        # Extrair dados de localização opcionais
+        address_name = validated_data.pop('address_name', None)
+        latitude = validated_data.pop('latitude', None)
+        longitude = validated_data.pop('longitude', None)
+        street = validated_data.pop('street', None)
+        number = validated_data.pop('number', None)
+        neighborhood = validated_data.pop('neighborhood', None)
+        city = validated_data.pop('city', None)
+        state = validated_data.pop('state', None)
+        postal_code = validated_data.pop('postal_code', None)
+
+        # Se coordenadas forem fornecidas, atualizar ou criar endereço
+        if latitude and longitude:
+            point = Point(float(longitude), float(latitude), srid=4326)
+            
+            if instance.address:
+                # Atualizar endereço existente
+                instance.address.street = street or address_name or instance.address.street
+                instance.address.number = number or instance.address.number
+                instance.address.neighborhood = neighborhood or instance.address.neighborhood
+                instance.address.city = city or instance.address.city
+                instance.address.state = state or instance.address.state
+                instance.address.postal_code = postal_code or instance.address.postal_code
+                instance.address.point = point
+                instance.address.save()
+            else:
+                # Criar novo endereço
+                address = Address.objects.create(
+                    street=street or address_name or 'Endereço',
+                    number=number or 'S/N',
+                    neighborhood=neighborhood or 'Centro',
+                    city=city or 'Patos',
+                    state=state or 'PB',
+                    postal_code=postal_code or '58700-000',
+                    point=point
+                )
+                instance.address = address
+
+        # Atualizar outros campos
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
 
 
 class TouristSpotListSerializer(serializers.ModelSerializer):

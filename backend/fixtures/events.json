@@ -1,0 +1,323 @@
+[
+  {
+    "model": "locations.location",
+    "pk": 11,
+    "fields": {
+      "name": "Praça Edivaldo Motta",
+      "description": "Praça central de Patos",
+      "latitude": "-7.025700",
+      "longitude": "-37.276700",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "locations.location",
+    "pk": 12,
+    "fields": {
+      "name": "Centro Cultural de Patos",
+      "description": "Espaço cultural no Jardim Queiroz",
+      "latitude": "-7.031000",
+      "longitude": "-37.282000",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "locations.location",
+    "pk": 13,
+    "fields": {
+      "name": "Clube Recreativo Liberdade",
+      "description": "Clube no bairro Liberdade",
+      "latitude": "-7.020000",
+      "longitude": "-37.270000",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "locations.location",
+    "pk": 14,
+    "fields": {
+      "name": "Museu Histórico de Patos",
+      "description": "Museu no centro histórico",
+      "latitude": "-7.024000",
+      "longitude": "-37.275000",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "locations.location",
+    "pk": 15,
+    "fields": {
+      "name": "Praça da Matriz",
+      "description": "Praça em frente à igreja matriz",
+      "latitude": "-7.026500",
+      "longitude": "-37.277500",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "locations.location",
+    "pk": 6,
+    "fields": {
+      "name": "Teatro Municipal",
+      "description": "Teatro no Belo Horizonte",
+      "latitude": "-7.018000",
+      "longitude": "-37.268000",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "locations.location",
+    "pk": 7,
+    "fields": {
+      "name": "Praça São Sebastião",
+      "description": "Praça no bairro São Sebastião",
+      "latitude": "-7.035000",
+      "longitude": "-37.285000",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "locations.location",
+    "pk": 8,
+    "fields": {
+      "name": "Biblioteca Pública Municipal",
+      "description": "Biblioteca no centro",
+      "latitude": "-7.024500",
+      "longitude": "-37.276000",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "locations.location",
+    "pk": 9,
+    "fields": {
+      "name": "Parque da Juventude",
+      "description": "Parque de lazer",
+      "latitude": "-7.029000",
+      "longitude": "-37.280000",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "locations.location",
+    "pk": 10,
+    "fields": {
+      "name": "Praça Central",
+      "description": "Praça no centro da cidade",
+      "latitude": "-7.026000",
+      "longitude": "-37.277000",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+
+  {
+    "model": "events.event",
+    "pk": 1,
+    "fields": {
+      "name": "Festival de Música Sertaneja",
+      "description": "Grande festival com artistas locais e regionais da música sertaneja. Venha curtir os melhores sucessos do sertão!",
+      "start_date": "2025-11-28T18:00:00Z",
+      "end_date": "2025-11-28T23:00:00Z",
+      "start_time": "18:00:00",
+      "end_time": "23:00:00",
+      "price": "0.00",
+      "accessibility": "Rampa de acesso, banheiros adaptados",
+      "category": 1,
+      "organizer": 1,
+      "content_type": 7,
+      "object_id": 1,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "events.event",
+    "pk": 2,
+    "fields": {
+      "name": "Feira de Artesanato Regional",
+      "description": "Feira com artesanato típico do sertão paraibano. Peças únicas feitas por artesãos locais.",
+      "start_date": "2025-12-05T08:00:00Z",
+      "end_date": "2025-12-07T18:00:00Z",
+      "start_time": "08:00:00",
+      "end_time": "18:00:00",
+      "price": "0.00",
+      "accessibility": "Acesso facilitado para cadeirantes",
+      "category": 9,
+      "organizer": 1,
+      "content_type": 7,
+      "object_id": 2,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "events.event",
+    "pk": 3,
+    "fields": {
+      "name": "Apresentação de Forró Pé de Serra",
+      "description": "Noite de forró tradicional com sanfona, zabumba e triângulo. Venha dançar!",
+      "start_date": "2025-12-14T20:00:00Z",
+      "end_date": "2025-12-14T23:30:00Z",
+      "start_time": "20:00:00",
+      "end_time": "23:30:00",
+      "price": "15.00",
+      "accessibility": "Estacionamento para deficientes",
+      "category": 1,
+      "organizer": 1,
+      "content_type": 7,
+      "object_id": 3,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "events.event",
+    "pk": 4,
+    "fields": {
+      "name": "Exposição de Arte Popular",
+      "description": "Exposição com obras de artistas populares da região, retratando a cultura sertaneja.",
+      "start_date": "2025-12-20T09:00:00Z",
+      "end_date": "2026-01-05T17:00:00Z",
+      "start_time": "09:00:00",
+      "end_time": "17:00:00",
+      "price": "5.00",
+      "accessibility": "Rampa de acesso, elevador",
+      "category": 5,
+      "organizer": 1,
+      "content_type": 7,
+      "object_id": 4,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "events.event",
+    "pk": 5,
+    "fields": {
+      "name": "Festival Gastronômico do Sertão",
+      "description": "Degustação de pratos típicos da culinária sertaneja. Comidas tradicionais e deliciosas!",
+      "start_date": "2026-01-10T11:00:00Z",
+      "end_date": "2026-01-10T20:00:00Z",
+      "start_time": "11:00:00",
+      "end_time": "20:00:00",
+      "price": "0.00",
+      "accessibility": "Área acessível para cadeirantes",
+      "category": 7,
+      "organizer": 1,
+      "content_type": 7,
+      "object_id": 5,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "events.event",
+    "pk": 6,
+    "fields": {
+      "name": "Apresentação de Teatro Popular",
+      "description": "Peça teatral sobre a vida no sertão nordestino. Emocionante e divertida!",
+      "start_date": "2026-01-18T19:00:00Z",
+      "end_date": "2026-01-18T21:00:00Z",
+      "start_time": "19:00:00",
+      "end_time": "21:00:00",
+      "price": "10.00",
+      "accessibility": "Assentos reservados para cadeirantes, banheiros adaptados",
+      "category": 2,
+      "organizer": 1,
+      "content_type": 7,
+      "object_id": 6,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "events.event",
+    "pk": 7,
+    "fields": {
+      "name": "Festa Junina Tradicional",
+      "description": "Grande festa junina com quadrilha, comidas típicas, fogueira e muito forró!",
+      "start_date": "2026-06-20T17:00:00Z",
+      "end_date": "2026-06-20T23:00:00Z",
+      "start_time": "17:00:00",
+      "end_time": "23:00:00",
+      "price": "0.00",
+      "accessibility": "Rampa de acesso",
+      "category": 8,
+      "organizer": 1,
+      "content_type": 7,
+      "object_id": 7,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "events.event",
+    "pk": 8,
+    "fields": {
+      "name": "Sarau Literário",
+      "description": "Noite de poesia e literatura com autores locais. Traga seu poema favorito!",
+      "start_date": "2026-02-05T18:30:00Z",
+      "end_date": "2026-02-05T21:00:00Z",
+      "start_time": "18:30:00",
+      "end_time": "21:00:00",
+      "price": "0.00",
+      "accessibility": "Acesso facilitado",
+      "category": 6,
+      "organizer": 1,
+      "content_type": 7,
+      "object_id": 8,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "events.event",
+    "pk": 9,
+    "fields": {
+      "name": "Show de Bandas Locais",
+      "description": "Festival com bandas de rock, pop e MPB da região. Apoie a música local!",
+      "start_date": "2026-03-15T19:00:00Z",
+      "end_date": "2026-03-15T23:30:00Z",
+      "start_time": "19:00:00",
+      "end_time": "23:30:00",
+      "price": "20.00",
+      "accessibility": "Área para cadeirantes, banheiros adaptados",
+      "category": 1,
+      "organizer": 1,
+      "content_type": 7,
+      "object_id": 9,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "events.event",
+    "pk": 10,
+    "fields": {
+      "name": "Cinema ao Ar Livre",
+      "description": "Sessão de cinema gratuita ao ar livre. Traga sua cadeira e pipoca!",
+      "start_date": "2026-04-10T19:30:00Z",
+      "end_date": "2026-04-10T22:00:00Z",
+      "start_time": "19:30:00",
+      "end_time": "22:00:00",
+      "price": "0.00",
+      "accessibility": "Espaço acessível",
+      "category": 4,
+      "organizer": 1,
+      "content_type": 7,
+      "object_id": 10,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  }
+]

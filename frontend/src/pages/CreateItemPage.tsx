@@ -20,6 +20,15 @@ interface LocationCoordinates {
   latitude: number;
   longitude: number;
   name: string;
+  address?: {
+    road?: string;
+    house_number?: string;
+    suburb?: string;
+    city?: string;
+    town?: string;
+    state?: string;
+    postcode?: string;
+  };
 }
 
 type NotificationType = 'success' | 'error' | 'info';
@@ -707,6 +716,7 @@ function CreateItemPage({ type }: CreateItemPageProps) {
       name: result.name || result.display_name.split(',')[0].trim(),
       latitude: parseFloat(result.lat),
       longitude: parseFloat(result.lon),
+      address: result.address
     };
     setSelectedLocation(location);
     setLocationSearch(location.name);
@@ -783,6 +793,17 @@ function CreateItemPage({ type }: CreateItemPageProps) {
         formDataToSend.append(locationNameKey, selectedLocation.name);
         formDataToSend.append('latitude', String(selectedLocation.latitude));
         formDataToSend.append('longitude', String(selectedLocation.longitude));
+        
+        // Para pontos turísticos, enviar dados completos do endereço
+        if (type === 'place' && selectedLocation.address) {
+          const addr = selectedLocation.address;
+          if (addr.road) formDataToSend.append('street', addr.road);
+          if (addr.house_number) formDataToSend.append('number', addr.house_number);
+          if (addr.suburb) formDataToSend.append('neighborhood', addr.suburb);
+          if (addr.city || addr.town) formDataToSend.append('city', addr.city || addr.town || '');
+          if (addr.state) formDataToSend.append('state', addr.state);
+          if (addr.postcode) formDataToSend.append('postal_code', addr.postcode);
+        }
       }
 
       if (imageFile) {

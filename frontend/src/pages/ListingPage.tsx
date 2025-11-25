@@ -318,7 +318,7 @@ function ListingPage({ type }: ListingPageProps) {
 
   const filteredItems = items.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (item.description || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'Todas Categorias' ||
       (type === 'events' ? item.category_name : item.category_name) === selectedCategory;
     const matchesLocation = selectedLocation === 'Todas Regiões' ||
@@ -338,9 +338,11 @@ function ListingPage({ type }: ListingPageProps) {
   // Render Event Card
   const renderEventCard = (event: Event) => {
     const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('pt-BR');
-    const formatTime = (timeString: string) => timeString.slice(0, 5);
-    const formatPrice = (price: number | string) => {
+    const formatTime = (timeString?: string) => timeString ? timeString.slice(0, 5) : '--:--';
+    const formatPrice = (price?: number | string) => {
+      if (price === undefined || price === null) return 'Gratuito';
       const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+      if (isNaN(numPrice)) return 'Gratuito';
       return numPrice === 0 ? 'Gratuito' : `R$ ${numPrice.toFixed(2).replace('.', ',')}`;
     };
 

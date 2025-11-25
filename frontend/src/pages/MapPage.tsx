@@ -1,11 +1,14 @@
 import styled, { keyframes } from 'styled-components';
 import { useState, useEffect } from 'react';
+import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMapEvents } from 'react-leaflet';
-import { Icon } from 'leaflet';
+import { Icon, DivIcon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { locationService, type Location } from '@/services/api';
 import { routingService, type RouteData } from '@/services/routing';
 import { geocodingService, type ReverseGeocodeResult } from '@/services/geocoding';
+import { eventsService, type Event } from '@/services/events';
+import { placesService, type TouristSpotListItem } from '@/services/places';
 import AddressSearch from '@/components/map/AddressSearch';
 import Navbar from '@/components/Navbar';
 import { MapPin, Navigation, X, Clock, Circle, ChevronDown } from 'lucide-react';
@@ -21,6 +24,31 @@ Icon.Default.mergeOptions({
   popupAnchor: [1, -34],
   shadowSize: [41, 41]
 });
+
+// --- Custom Icons usando DivIcon (nativo do Leaflet) ---
+const customIcons = {
+  origin: new DivIcon({
+    className: 'custom-div-icon',
+    html: '<div style="background-color: #22c55e; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 16px;">🏁</div>',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -15]
+  }),
+  destination: new DivIcon({
+    className: 'custom-div-icon',
+    html: '<div style="background-color: #ef4444; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 16px;">📍</div>',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -15]
+  }),
+  event: new DivIcon({
+    className: 'custom-div-icon',
+    html: '<div style="background-color: #8b5cf6; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 16px;">🎉</div>',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -15]
+  })
+};
 
 // --- Animations ---
 const slideUp = keyframes`
@@ -247,6 +275,31 @@ const DropdownItem = styled.button`
   span { font-size: 0.8rem; color: #6b7280; }
 `;
 
+const AddWaypointBtn = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  height: 48px;
+  padding: 0 1rem;
+  background: transparent;
+  color: #666;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin: 0.5rem 0;
+
+  &:hover {
+    border-color: #1a1a1a;
+    color: #1a1a1a;
+    background: #f9fafb;
+  }
+`;
+
 const CalculateBtn = styled.button`
   display: flex;
   align-items: center;
@@ -426,11 +479,15 @@ export default function MapPage() {
   const locationState = useLocation();
   const [origin, setOrigin] = useState<Location | null>(null);
   const [destination, setDestination] = useState<Location | null>(null);
+  const [waypoints, setWaypoints] = useState<(Location | null)[]>([]);
 
   const [locations, setLocations] = useState<Location[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [touristSpots, setTouristSpots] = useState<TouristSpotListItem[]>([]);
   const [routeData, setRouteData] = useState<RouteData | null>(null);
 
   const [isDestDropdownOpen, setIsDestDropdownOpen] = useState(false);
+  const [waypointDropdownOpen, setWaypointDropdownOpen] = useState<number | null>(null);
   const [loadingRoute, setLoadingRoute] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [clickedLocation, setClickedLocation] = useState<ReverseGeocodeResult | null>(null);
@@ -442,17 +499,23 @@ export default function MapPage() {
   ];
 
   useEffect(() => {
-    const fetchLocations = async () => {
+    const fetchData = async () => {
       try {
-        const data = await locationService.getLocations();
-        setLocations(Array.isArray(data) ? data : []);
+        const [locationsData, eventsData, touristSpotsData] = await Promise.all([
+          locationService.getLocations(),
+          eventsService.getEvents({ filter: 'upcoming' }),
+          placesService.getTouristSpots()
+        ]);
+        setLocations(Array.isArray(locationsData) ? locationsData : []);
+        setEvents(Array.isArray(eventsData) ? eventsData : []);
+        setTouristSpots(Array.isArray(touristSpotsData) ? touristSpotsData : []);
       } catch (err) {
         console.error(err);
       } finally {
         setPageLoading(false);
       }
     };
-    fetchLocations();
+    fetchData();
   }, []);
 
   // Handle incoming destination from other pages
@@ -515,18 +578,80 @@ export default function MapPage() {
 
     setLoadingRoute(true);
     try {
-      const route = await routingService.calculateRoute({
-        coordinates: [
-          { lat: origin.latitude, lon: origin.longitude },
-          { lat: destination.latitude, lon: destination.longitude }
-        ]
-      });
+      // Montar array de coordenadas: origem + waypoints + destino
+      const coordinates = [
+        { lat: origin.latitude, lon: origin.longitude },
+        ...waypoints.filter(w => w !== null).map(w => ({ lat: w!.latitude, lon: w!.longitude })),
+        { lat: destination.latitude, lon: destination.longitude }
+      ];
+
+      const route = await routingService.calculateRoute({ coordinates });
       setRouteData(route);
     } catch (error) {
       console.error('Erro rota', error);
       alert('Não foi possível calcular a rota. Tente pontos mais próximos ou em estradas conhecidas.');
     } finally {
       setLoadingRoute(false);
+    }
+  };
+
+  const addWaypoint = () => {
+    setWaypoints([...waypoints, null]);
+  };
+
+  const removeWaypoint = (index: number) => {
+    setWaypoints(waypoints.filter((_, i) => i !== index));
+  };
+
+  const updateWaypoint = (index: number, location: Location) => {
+    const newWaypoints = [...waypoints];
+    newWaypoints[index] = location;
+    setWaypoints(newWaypoints);
+  };
+
+  const handleMarkerClick = (item: Location | Event) => {
+    // Se não tem origem, define como origem
+    if (!origin) {
+      setOrigin({
+        id: item.id,
+        name: item.name,
+        description: 'description' in item ? item.description : '',
+        latitude: item.latitude,
+        longitude: item.longitude,
+        created_at: new Date().toISOString()
+      });
+      return;
+    }
+
+    // Se não tem destino, define como destino
+    if (!destination) {
+      setDestination({
+        id: item.id,
+        name: item.name,
+        description: 'description' in item ? item.description : '',
+        latitude: item.latitude,
+        longitude: item.longitude,
+        created_at: new Date().toISOString()
+      });
+      return;
+    }
+
+    // Se já tem origem e destino, adiciona como waypoint
+    const newLocation: Location = {
+      id: item.id,
+      name: item.name,
+      description: 'description' in item ? item.description : '',
+      latitude: item.latitude,
+      longitude: item.longitude,
+      created_at: new Date().toISOString()
+    };
+
+    // Adiciona no primeiro waypoint vazio ou cria um novo
+    const emptyIndex = waypoints.findIndex(w => w === null);
+    if (emptyIndex >= 0) {
+      updateWaypoint(emptyIndex, newLocation);
+    } else {
+      setWaypoints([...waypoints, newLocation]);
     }
   };
 
@@ -614,6 +739,78 @@ export default function MapPage() {
               </InputGroup>
             </InputRow>
 
+            {/* Waypoints intermediários */}
+            {waypoints.map((waypoint, index) => {
+              const allItems = [...events, ...touristSpots];
+              const isOpen = waypointDropdownOpen === index;
+              
+              return (
+                <InputRow key={index} $zIndex={15 - index}>
+                  <IconWrapper>
+                    <MapPin size={18} color="#f59e0b" fill="#f59e0b" />
+                  </IconWrapper>
+                  <InputGroup>
+                    <InputLabel>Parada {index + 1}</InputLabel>
+                    <div style={{ position: 'relative' }}>
+                      <StyledWaypointButton onClick={() => setWaypointDropdownOpen(isOpen ? null : index)}>
+                        {waypoint ? (
+                          <>
+                            <span>{waypoint.name}</span>
+                            <div role="button" onClick={(e) => { e.stopPropagation(); removeWaypoint(index); }} style={{ display: 'flex', marginLeft: 'auto' }}>
+                              <X size={18} color="#6b7280" />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <span className="placeholder">Selecione um evento ou local...</span>
+                            <ChevronDown size={16} color="#9ca3af" />
+                          </>
+                        )}
+                      </StyledWaypointButton>
+
+                      {isOpen && (
+                        <DropdownList>
+                          {allItems.map(item => (
+                            <DropdownItem 
+                              key={`${item.id}-${'start_date' in item ? 'event' : 'location'}`} 
+                              onClick={() => { 
+                                updateWaypoint(index, {
+                                  id: item.id,
+                                  name: item.name,
+                                  description: 'description' in item ? item.description : '',
+                                  latitude: item.latitude,
+                                  longitude: item.longitude,
+                                  created_at: new Date().toISOString()
+                                }); 
+                                setWaypointDropdownOpen(null); 
+                              }}
+                            >
+                              <strong>{item.name}</strong>
+                              <span>{'start_date' in item ? '🎉 Evento' : '🏛️ Ponto Turístico'}</span>
+                            </DropdownItem>
+                          ))}
+                        </DropdownList>
+                      )}
+                    </div>
+                  </InputGroup>
+                </InputRow>
+              );
+            })}
+
+            {/* Botão para adicionar waypoint */}
+            {origin && destination && waypoints.length < 5 && (
+              <InputRow $zIndex={5}>
+                <IconWrapper>
+                  <div style={{ width: '32px' }} />
+                </IconWrapper>
+                <InputGroup>
+                  <AddWaypointBtn onClick={addWaypoint}>
+                    + Adicionar Parada
+                  </AddWaypointBtn>
+                </InputGroup>
+              </InputRow>
+            )}
+
             {/* Destino (Z-Index MENOR para ficar por baixo) */}
             <InputRow $zIndex={10}>
               <IconWrapper>
@@ -641,10 +838,23 @@ export default function MapPage() {
 
                   {isDestDropdownOpen && (
                     <DropdownList>
-                      {locations.map(loc => (
-                        <DropdownItem key={loc.id} onClick={() => { setDestination(loc); setIsDestDropdownOpen(false); }}>
-                          <strong>{loc.name}</strong>
-                          <span>{loc.description?.substring(0, 35)}...</span>
+                      {[...events, ...touristSpots].map(item => (
+                        <DropdownItem 
+                          key={`dest-${item.id}-${'start_date' in item ? 'event' : 'spot'}`} 
+                          onClick={() => { 
+                            setDestination({
+                              id: item.id,
+                              name: item.name,
+                              description: 'description' in item ? item.description : '',
+                              latitude: item.latitude,
+                              longitude: item.longitude,
+                              created_at: new Date().toISOString()
+                            }); 
+                            setIsDestDropdownOpen(false); 
+                          }}
+                        >
+                          <strong>{item.name}</strong>
+                          <span>{'start_date' in item ? '🎉 Evento' : '🏛️ Ponto Turístico'}</span>
                         </DropdownItem>
                       ))}
                     </DropdownList>
@@ -674,30 +884,183 @@ export default function MapPage() {
             <MapClickHandler onMapClick={handleMapClick} />
 
             {origin && (
-              <Marker position={[origin.latitude, origin.longitude]} icon={new Icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-              })}>
+              <Marker position={[origin.latitude, origin.longitude]} icon={customIcons.origin}>
                 <Popup>{origin.name}</Popup>
               </Marker>
             )}
 
             {destination && (
-              <Marker position={[destination.latitude, destination.longitude]} icon={new Icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-              })}>
+              <Marker position={[destination.latitude, destination.longitude]} icon={customIcons.destination}>
                 <Popup>{destination.name}</Popup>
               </Marker>
             )}
+
+            {/* Waypoints intermediários */}
+            {waypoints.map((waypoint, index) => {
+              if (!waypoint) return null;
+              return (
+                <Marker 
+                  key={`waypoint-${index}`}
+                  position={[waypoint.latitude, waypoint.longitude]}
+                  icon={new DivIcon({
+                    className: 'custom-div-icon',
+                    html: `<div style="background-color: #f59e0b; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: white;">${index + 1}</div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15],
+                    popupAnchor: [0, -15]
+                  })}
+                >
+                  <Popup>{waypoint.name}</Popup>
+                </Marker>
+              );
+            })}
+
+            {/* Eventos no mapa */}
+            {events.map(event => {
+              if (!event.latitude || !event.longitude) return null;
+              return (
+                <Marker 
+                  key={`event-${event.id}`} 
+                  position={[event.latitude, event.longitude]}
+                  icon={customIcons.event}
+                >
+                  <Popup>
+                    <CustomPopup>
+                      <h4>{event.name}</h4>
+                      <p>{event.location_name || 'Evento'}</p>
+                      <p style={{ fontSize: '0.8rem', color: '#999' }}>
+                        {new Date(event.start_date).toLocaleDateString('pt-BR')}
+                      </p>
+                      <PopupActions>
+                        {!origin && (
+                          <PopupBtn onClick={() => {
+                            setOrigin({
+                              id: event.id,
+                              name: event.name,
+                              description: event.location_name || '',
+                              latitude: event.latitude,
+                              longitude: event.longitude,
+                              created_at: new Date().toISOString()
+                            });
+                          }}>
+                            Definir como Partida
+                          </PopupBtn>
+                        )}
+                        {!destination && (
+                          <PopupBtn onClick={() => {
+                            setDestination({
+                              id: event.id,
+                              name: event.name,
+                              description: event.location_name || '',
+                              latitude: event.latitude,
+                              longitude: event.longitude,
+                              created_at: new Date().toISOString()
+                            });
+                          }}>
+                            Definir como Destino
+                          </PopupBtn>
+                        )}
+                        {origin && destination && (
+                          <PopupBtn className="secondary" onClick={() => {
+                            const emptyIndex = waypoints.findIndex(w => w === null);
+                            const newWaypoint = {
+                              id: event.id,
+                              name: event.name,
+                              description: event.location_name || '',
+                              latitude: event.latitude,
+                              longitude: event.longitude,
+                              created_at: new Date().toISOString()
+                            };
+                            if (emptyIndex >= 0) {
+                              updateWaypoint(emptyIndex, newWaypoint);
+                            } else {
+                              setWaypoints([...waypoints, newWaypoint]);
+                            }
+                          }}>
+                            Adicionar como Parada
+                          </PopupBtn>
+                        )}
+                      </PopupActions>
+                    </CustomPopup>
+                  </Popup>
+                </Marker>
+              );
+            })}
+
+            {/* Pontos Turísticos no mapa */}
+            {touristSpots.map(spot => {
+              if (!spot.latitude || !spot.longitude) return null;
+              return (
+                <Marker 
+                  key={`spot-${spot.id}`} 
+                  position={[spot.latitude, spot.longitude]}
+                  icon={new DivIcon({
+                    className: 'custom-div-icon',
+                    html: '<div style="background-color: #06b6d4; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 16px;">🏛️</div>',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15],
+                    popupAnchor: [0, -15]
+                  })}
+                >
+                  <Popup>
+                    <CustomPopup>
+                      <h4>{spot.name}</h4>
+                      <p>{spot.location || 'Ponto Turístico'}</p>
+                      <PopupActions>
+                        {!origin && (
+                          <PopupBtn onClick={() => {
+                            setOrigin({
+                              id: spot.id,
+                              name: spot.name,
+                              description: spot.location || '',
+                              latitude: spot.latitude,
+                              longitude: spot.longitude,
+                              created_at: new Date().toISOString()
+                            });
+                          }}>
+                            Definir como Partida
+                          </PopupBtn>
+                        )}
+                        {!destination && (
+                          <PopupBtn onClick={() => {
+                            setDestination({
+                              id: spot.id,
+                              name: spot.name,
+                              description: spot.location || '',
+                              latitude: spot.latitude,
+                              longitude: spot.longitude,
+                              created_at: new Date().toISOString()
+                            });
+                          }}>
+                            Definir como Destino
+                          </PopupBtn>
+                        )}
+                        {origin && destination && (
+                          <PopupBtn className="secondary" onClick={() => {
+                            const emptyIndex = waypoints.findIndex(w => w === null);
+                            const newWaypoint = {
+                              id: spot.id,
+                              name: spot.name,
+                              description: spot.location || '',
+                              latitude: spot.latitude,
+                              longitude: spot.longitude,
+                              created_at: new Date().toISOString()
+                            };
+                            if (emptyIndex >= 0) {
+                              updateWaypoint(emptyIndex, newWaypoint);
+                            } else {
+                              setWaypoints([...waypoints, newWaypoint]);
+                            }
+                          }}>
+                            Adicionar como Parada
+                          </PopupBtn>
+                        )}
+                      </PopupActions>
+                    </CustomPopup>
+                  </Popup>
+                </Marker>
+              );
+            })}
 
             {clickedLocation && (
               <Marker position={[parseFloat(clickedLocation.lat), parseFloat(clickedLocation.lon)]}>
@@ -706,12 +1069,37 @@ export default function MapPage() {
                     <h4>Local Selecionado</h4>
                     <p>{clickedLocation.display_name.split(',')[0]}</p>
                     <PopupActions>
-                      <PopupBtn onClick={() => handleSetLocationFromMap('origin')}>
-                        Definir como Partida
-                      </PopupBtn>
-                      <PopupBtn className="secondary" onClick={() => handleSetLocationFromMap('dest')}>
-                        Definir como Destino
-                      </PopupBtn>
+                      {!origin && (
+                        <PopupBtn onClick={() => handleSetLocationFromMap('origin')}>
+                          Definir como Partida
+                        </PopupBtn>
+                      )}
+                      {!destination && (
+                        <PopupBtn onClick={() => handleSetLocationFromMap('dest')}>
+                          Definir como Destino
+                        </PopupBtn>
+                      )}
+                      {origin && destination && (
+                        <PopupBtn className="secondary" onClick={() => {
+                          const newWaypoint: Location = {
+                            id: Date.now(),
+                            name: clickedLocation.display_name.split(',')[0].trim(),
+                            description: clickedLocation.display_name,
+                            latitude: parseFloat(clickedLocation.lat),
+                            longitude: parseFloat(clickedLocation.lon),
+                            created_at: new Date().toISOString()
+                          };
+                          const emptyIndex = waypoints.findIndex(w => w === null);
+                          if (emptyIndex >= 0) {
+                            updateWaypoint(emptyIndex, newWaypoint);
+                          } else {
+                            setWaypoints([...waypoints, newWaypoint]);
+                          }
+                          setClickedLocation(null);
+                        }}>
+                          Adicionar como Parada
+                        </PopupBtn>
+                      )}
                     </PopupActions>
                   </CustomPopup>
                 </Popup>

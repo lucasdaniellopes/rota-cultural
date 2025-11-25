@@ -215,19 +215,21 @@ const MapPlaceholder = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 12px;
   padding: 24px 20px;
   background: #f8f9fa;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  color: #999;
+  color: #666;
 
-  svg { color: #ccc; }
+  svg { color: #141414; }
   
   p {
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 15px;
+    font-weight: 600;
     margin: 0;
     text-align: center;
+    color: #1a1a1a;
   }
 `;
 
@@ -439,7 +441,7 @@ function ItemDetailPage({ type }: ItemDetailPageProps) {
         setData({
           id: place.id!,
           title: place.name,
-          image_url: undefined, // Places usually don't have a main image in the API response shown in previous files, but we can check
+          image_url: place.image_url,
           category_name: place.category_name,
           description: place.description,
           accessibility: place.accessibility,
