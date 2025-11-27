@@ -1,0 +1,22 @@
+{
+  "reviews": [
+    {
+      "id": 1,
+      "rating": 5,
+      "comment": "Lugar incrível! Muito bem preservado.",
+      "user": "João Silva",
+      "created_at": "2025-11-20T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "rating": 4,
+      "comment": "Ótimo para visitar com a família.",
+      "user": "Maria Santos",
+      "created_at": "2025-11-21T14:30:00Z"
+    }
+  ],
+  "newReview": {
+    "rating": 5,
+    "comment": "Experiência maravilhosa! Recomendo muito."
+  }
+}

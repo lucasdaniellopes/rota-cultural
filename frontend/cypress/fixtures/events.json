@@ -1,0 +1,38 @@
+{
+  "events": [
+    {
+      "id": 1,
+      "name": "Festival de Música",
+      "description": "Festival anual de música regional",
+      "address": "Praça da Matriz, Patos - PB",
+      "latitude": -7.0245,
+      "longitude": -37.2803,
+      "category": "Música",
+      "start_date": "2025-12-15T18:00:00Z",
+      "end_date": "2025-12-15T23:00:00Z",
+      "image": "https://via.placeholder.com/400x300"
+    },
+    {
+      "id": 2,
+      "name": "Feira de Artesanato",
+      "description": "Feira com produtos artesanais locais",
+      "address": "Centro Cultural, Patos - PB",
+      "latitude": -7.0255,
+      "longitude": -37.2813,
+      "category": "Artesanato",
+      "start_date": "2025-12-20T08:00:00Z",
+      "end_date": "2025-12-20T18:00:00Z",
+      "image": "https://via.placeholder.com/400x300"
+    }
+  ],
+  "newEvent": {
+    "name": "Show de Forró",
+    "description": "Apresentação de bandas de forró",
+    "address": "Praça Central, Patos - PB",
+    "latitude": -7.0265,
+    "longitude": -37.2823,
+    "category": "Música",
+    "start_date": "2025-12-25T19:00:00Z",
+    "end_date": "2025-12-25T23:00:00Z"
+  }
+}

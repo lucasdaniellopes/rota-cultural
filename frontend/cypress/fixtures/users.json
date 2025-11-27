@@ -1,0 +1,20 @@
+{
+  "testUser": {
+    "email": "teste@rotacultural.com",
+    "password": "senha123",
+    "name": "Usuário Teste",
+    "username": "usuario_teste"
+  },
+  "adminUser": {
+    "email": "admin@rotacultural.com",
+    "password": "admin123",
+    "name": "Admin Teste",
+    "username": "admin_teste"
+  },
+  "newUser": {
+    "email": "novo@rotacultural.com",
+    "password": "senha123",
+    "name": "Novo Usuário",
+    "username": "novo_usuario"
+  }
+}

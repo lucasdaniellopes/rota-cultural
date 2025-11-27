@@ -176,5 +176,10 @@ psd
 thumb
 sketch
 
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+
 # End of https://www.toptal.com/developers/gitignore/api/django,react
 /backend/avatars

@@ -1,0 +1,32 @@
+{
+  "places": [
+    {
+      "id": 1,
+      "name": "Praça da Matriz",
+      "description": "Praça histórica no centro de Patos",
+      "address": "Centro, Patos - PB",
+      "latitude": -7.0245,
+      "longitude": -37.2803,
+      "category": "Praça",
+      "image": "https://via.placeholder.com/400x300"
+    },
+    {
+      "id": 2,
+      "name": "Museu Histórico de Patos",
+      "description": "Museu com acervo histórico da cidade",
+      "address": "Rua das Flores, 123, Patos - PB",
+      "latitude": -7.0255,
+      "longitude": -37.2813,
+      "category": "Museu",
+      "image": "https://via.placeholder.com/400x300"
+    }
+  ],
+  "newPlace": {
+    "name": "Parque da Cidade",
+    "description": "Parque público com área verde",
+    "address": "Av. Principal, 456, Patos - PB",
+    "latitude": -7.0265,
+    "longitude": -37.2823,
+    "category": "Parque"
+  }
+}

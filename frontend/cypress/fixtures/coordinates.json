@@ -1,0 +1,17 @@
+{
+  "patos": {
+    "latitude": -7.0245,
+    "longitude": -37.2803,
+    "zoom": 13
+  },
+  "center": {
+    "latitude": -7.0255,
+    "longitude": -37.2813
+  },
+  "bounds": {
+    "north": -7.0100,
+    "south": -7.0400,
+    "east": -37.2600,
+    "west": -37.3000
+  }
+}
