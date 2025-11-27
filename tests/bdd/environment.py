@@ -14,11 +14,13 @@ except ImportError:
     print("Warning: behave_django not available, using manual Django setup")
 
 def before_all(context):
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'rota_cultural.core.settings')
-
-    backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend'))
+    # Add backend to path
+    backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
     if backend_path not in sys.path:
         sys.path.insert(0, backend_path)
+
+    # Set Django settings
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'rota_cultural.core.settings')
 
     print(f"Backend path: {backend_path}")
     print(f"Django Settings: {os.environ.get('DJANGO_SETTINGS_MODULE')}")
